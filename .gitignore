@@ -1,0 +1,130 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+pip-wheel-metadata/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environment folders
+venv/
+ENV/
+env/
+.venv/
+venv.bak/
+env.bak/
+
+# pyenv
+.python-version
+
+# pipenv
+Pipfile.lock
+
+# Poetry
+poetry.lock
+__pypackages__/
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints
+
+# pyre type checker
+.pyre/
+
+# mypy
+.mypy_cache/
+
+# IDEs and editors
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+ehthumbs.db
+Icon?
+
+# Logs and databases
+*.log
+*.sql
+*.sqlite3
+*.db
+*.sqlite
+
+# Pickles, large binary artefacts
+*.pkl
+*.npz
+*.h5
+
+# Environment / secrets
+.env
+.env.*
+secrets.*
+credentials/
+
+# Data folders (ignore large datasets; if you want to track some files, remove or adjust these)
+data/raw/
+data/processed/
+data/interim/
+
+# keep annotation text files but ignore large binary intermediates
+data/interim/*.pkl
+data/interim/*.npz
+data/interim/*.h5
+
+# Models / checkpoints / outputs
+checkpoints/
+models/
+*.ckpt
+*.pt
+*.pth
+outputs/
+results/
+reports/
+figures/
+
+# Optional: local IDE/task files
+.vscode/
+/.idea/
+
+# End of file
