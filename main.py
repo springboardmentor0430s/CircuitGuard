@@ -90,7 +90,7 @@ def process_single_pair(template_path, test_path, use_xor=True):
         defect_mask = defects_dict['combined']
         result_img = highlight_xor_defects(aligned_test, defects_dict)
     else:
-        from preprocessing.subtraction import image_subtraction, highlight_defects
+        from src.preprocessing.subtraction import image_subtraction, highlight_defects
         diff, thresh, defect_mask = image_subtraction(aligned_test, template_img)
         result_img = highlight_defects(aligned_test, defect_mask)
     print("Detecting contours...")
