@@ -4,7 +4,7 @@ import argparse
 import glob
 import numpy as np
 from preprocessing.alignment import align_images, simple_alignment
-from preprocessing.xor_detection import xor_defect_detection, highlight_xor_defects
+from preprocessing.binary_defect_detection import xor_defect_detection, highlight_xor_defects
 from preprocessing.contour_detection import detect_contours, draw_contours_and_boxes
 from utils.visualization import display_results
 
