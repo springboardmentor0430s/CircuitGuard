@@ -2,8 +2,9 @@ import cv2
 import os
 import argparse
 import glob
+import numpy as np
 from preprocessing.alignment import align_images, simple_alignment
-from preprocessing.subtraction import image_subtraction, highlight_defects
+from preprocessing.xor_detection import xor_defect_detection, highlight_xor_defects
 from preprocessing.contour_detection import detect_contours, draw_contours_and_boxes
 from utils.visualization import display_results
 
@@ -85,9 +86,9 @@ def load_all_pairs(template_dir, test_dir):
     
     return image_pairs
 
-def process_single_pair(template_path, test_path):
+def process_single_pair(template_path, test_path, use_xor=True):
     """
-    Process a single template-test image pair
+    Process a single template-test image pair with XOR method
     """
     # Load images
     template_img = cv2.imread(template_path)
@@ -112,12 +113,19 @@ def process_single_pair(template_path, test_path):
         print("Feature-based alignment failed, using simple alignment...")
         aligned_test, _ = simple_alignment(test_img, template_img)
     
-    # Step 2: Image subtraction and thresholding
-    print("Performing image subtraction...")
-    diff, thresh, defect_mask = image_subtraction(aligned_test, template_img)
-    
-    # Step 3: Highlight defects on test image
-    result_img = highlight_defects(aligned_test, defect_mask)
+    if use_xor:
+        # Step 2: XOR-based defect detection
+        print("Using XOR-based defect detection...")
+        defects_dict = xor_defect_detection(aligned_test, template_img)
+        defect_mask = defects_dict['combined']
+        
+        # Step 3: Highlight defects with different colors for different types
+        result_img = highlight_xor_defects(aligned_test, defects_dict)
+    else:
+        # Fallback to traditional method (keep your existing code)
+        from preprocessing.subtraction import image_subtraction, highlight_defects
+        diff, thresh, defect_mask = image_subtraction(aligned_test, template_img)
+        result_img = highlight_defects(aligned_test, defect_mask)
     
     # Step 4: Detect contours and bounding boxes
     print("Detecting contours...")
@@ -131,8 +139,6 @@ def process_single_pair(template_path, test_path):
     return {
         'template': template_img,
         'test': aligned_test,
-        'diff': diff,
-        'thresh': thresh,
         'defect_mask': defect_mask,
         'result': result_img,
         'contours_img': contours_img,
@@ -141,7 +147,7 @@ def process_single_pair(template_path, test_path):
     }
 
 def main():
-    parser = argparse.ArgumentParser(description='PCB Defect Detection - Modules 1 & 2')
+    parser = argparse.ArgumentParser(description='PCB Defect Detection - XOR Method')
     parser.add_argument('--template_dir', type=str, default='data/interim/template',
                        help='Directory containing template images')
     parser.add_argument('--test_dir', type=str, default='data/interim/test',
@@ -150,6 +156,8 @@ def main():
                        help='Specific image name to process (e.g., group00041_00041000)')
     parser.add_argument('--all', action='store_true',
                        help='Process all image pairs')
+    parser.add_argument('--traditional', action='store_true',
+                       help='Use traditional method instead of XOR')
     
     args = parser.parse_args()
     
@@ -184,7 +192,7 @@ def main():
     for i, (template_path, test_path, filename) in enumerate(image_pairs):
         print(f"\n--- Processing pair {i+1}/{len(image_pairs)}: {filename} ---")
         
-        results = process_single_pair(template_path, test_path)
+        results = process_single_pair(template_path, test_path, use_xor=not args.traditional)
         
         if results:
             # Display results

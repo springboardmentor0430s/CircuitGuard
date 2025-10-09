@@ -20,6 +20,7 @@ def create_comparison_display(template_img, test_img, result_img, contours_img, 
     """
     # Resize all images to the same height while maintaining aspect ratio
     template_resized = resize_image_to_height(template_img, target_height)
+    test_resized = resize_image_to_height(test_img, target_height)
     contours_resized = resize_image_to_height(contours_img, target_height)
     
     # Ensure all images are in color
@@ -27,13 +28,15 @@ def create_comparison_display(template_img, test_img, result_img, contours_img, 
         template_resized = cv2.cvtColor(template_resized, cv2.COLOR_GRAY2BGR)
     if len(contours_resized.shape) == 2:
         contours_resized = cv2.cvtColor(contours_resized, cv2.COLOR_GRAY2BGR)
+    if len(test_resized) == 2:
+        test_resized = cv2.cvtColor(test_resized, cv2.COLOR_GRAY2BGR)
     
     # Create single row: Template and Contours images
-    combined = np.hstack([template_resized, contours_resized])
+    combined = np.hstack([template_resized ,test_resized, contours_resized])
     
     # Add a distinct vertical separator line between images
-    line_color = (255, 255, 255)  # White line
-    line_thickness = 3
+    line_color = (128,0,128)  # White line
+    line_thickness = 5
     
     # Vertical line at the junction
     v_line_x = template_resized.shape[1]
