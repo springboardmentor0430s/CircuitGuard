@@ -38,8 +38,8 @@ def xor_defect_detection(test_img, template_img):
     kernel = np.ones((2, 2), np.uint8)
     cleaned_defects = cv2.morphologyEx(combined_defects, cv2.MORPH_OPEN, kernel)
     
-    # Remove very small noise
-    cleaned_defects = remove_tiny_components(cleaned_defects, min_size=3)
+    # Remove very small noise with validation
+    cleaned_defects = remove_tiny_components_with_validation(cleaned_defects, min_size=5)
     
     print(f"XOR defects: {np.count_nonzero(xor_result)}")
     print(f"Missing copper: {np.count_nonzero(missing_copper)}")
@@ -64,6 +64,29 @@ def remove_tiny_components(binary_img, min_size=5):
     for i in range(1, num_labels):
         if stats[i, cv2.CC_STAT_AREA] >= min_size:
             output[labels == i] = 255
+    
+    return output
+
+def remove_tiny_components_with_validation(binary_img, min_size=5):
+    """
+    Remove small components with additional validation to prevent zero-dimension boxes
+    """
+    num_labels, labels, stats, _ = cv2.connectedComponentsWithStats(binary_img, connectivity=8)
+    
+    output = np.zeros_like(binary_img)
+    
+    for i in range(1, num_labels):
+        area = stats[i, cv2.CC_STAT_AREA]
+        width = stats[i, cv2.CC_STAT_WIDTH]
+        height = stats[i, cv2.CC_STAT_HEIGHT]
+        
+        # Skip components that would create zero-dimension bounding boxes
+        if area >= min_size or width >= 2 or height >= 2:
+            output[labels == i] = 255
+    
+    removed_count = num_labels - 1 - (np.count_nonzero(output) // 255)
+    if removed_count > 0:
+        print(f"Removed {removed_count} components that would create invalid bounding boxes")
     
     return output
 
