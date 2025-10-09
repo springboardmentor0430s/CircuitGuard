@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 
 def detect_contours(defect_mask, min_area=10, max_area=500):
-    """Find filtered contours and boxes."""
+    """Filter defect contours"""
     contours, _ = cv2.findContours(defect_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     bounding_boxes = []
     filtered_contours = []
@@ -24,7 +24,7 @@ def detect_contours(defect_mask, min_area=10, max_area=500):
     return filtered_contours, bounding_boxes
 
 def draw_contours_and_boxes(image, contours, bounding_boxes):
-    """Draw bounding boxes."""
+    """Visualize defect boxes"""
     if len(image.shape) == 2:
         result_img = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
     else:
@@ -40,7 +40,7 @@ def draw_contours_and_boxes(image, contours, bounding_boxes):
     return result_img
 
 def extract_defect_regions(test_img, bounding_boxes, margin=2):
-    """Extract ROI images around boxes."""
+    """Extract defect ROIs"""
     defect_regions = []
     for (x, y, w, h) in bounding_boxes:
         if w < 1 or h < 1:

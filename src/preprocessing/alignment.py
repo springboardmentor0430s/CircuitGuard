@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 
 def align_images(test_img, template_img):
-    """Feature-based alignment to template."""
+    """ORB feature alignment"""
     if len(test_img.shape) == 3:
         test_gray = cv2.cvtColor(test_img, cv2.COLOR_BGR2GRAY)
     else:
@@ -50,7 +50,7 @@ def align_images(test_img, template_img):
 
 
 def simple_alignment(test_img, template_img):
-    """Template-matching fallback alignment."""
+    """Template matching alignment"""
     if len(test_img.shape) == 3:
         test_gray = cv2.cvtColor(test_img, cv2.COLOR_BGR2GRAY)
     else:

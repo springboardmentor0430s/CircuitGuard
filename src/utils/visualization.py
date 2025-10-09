@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 
 def resize_image_to_height(img, target_height):
-    """Resize to target height keeping aspect ratio."""
+    """Height-preserving resize"""
     if img is None:
         return None
         
@@ -15,7 +15,7 @@ def resize_image_to_height(img, target_height):
     return cv2.resize(img, (new_width, target_height))
 
 def create_comparison_display(template_img, test_img, result_img, contours_img, target_height=400):
-    """Side-by-side display at a common height."""
+    """Generate comparison grid"""
     template_resized = resize_image_to_height(template_img, target_height)
     test_resized = resize_image_to_height(test_img, target_height)
     contours_resized = resize_image_to_height(contours_img, target_height)
@@ -36,7 +36,7 @@ def create_comparison_display(template_img, test_img, result_img, contours_img, 
     return combined
 
 def display_results(template_img, test_img, result_img, contours_img, window_name="PCB Defect Detection"):
-    """Show results in a resizable window."""
+    """Show detection results"""
     display_img = create_comparison_display(template_img, test_img, result_img, contours_img, target_height=500)
     cv2.namedWindow(window_name, cv2.WINDOW_NORMAL)
     window_width = min(display_img.shape[1], 1600)

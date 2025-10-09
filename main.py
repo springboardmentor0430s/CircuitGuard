@@ -3,13 +3,13 @@ import os
 import argparse
 import glob
 import numpy as np
-from preprocessing.alignment import align_images, simple_alignment
-from preprocessing.binary_defect_detection import xor_defect_detection, highlight_xor_defects
-from preprocessing.contour_detection import detect_contours, draw_contours_and_boxes
-from utils.visualization import display_results
+from src.preprocessing.alignment import align_images, simple_alignment
+from src.preprocessing.binary_defect_detection import xor_defect_detection, highlight_xor_defects
+from src.preprocessing.contour_detection import detect_contours, draw_contours_and_boxes
+from src.utils.visualization import display_results
 
 def load_specific_pair(template_dir, test_dir, image_name):
-    """Load one template-test pair by base name."""
+    """Load matched images"""
     image_name = os.path.splitext(image_name)[0]
     template_patterns = [
         os.path.join(template_dir, f"{image_name}_temp.*"),
@@ -44,7 +44,7 @@ def load_specific_pair(template_dir, test_dir, image_name):
         return []
 
 def load_all_pairs(template_dir, test_dir):
-    """Load all template-test pairs."""
+    """Batch load pairs"""
     image_pairs = []
     template_files = glob.glob(os.path.join(template_dir, "*_temp.jpg"))
     template_files.extend(glob.glob(os.path.join(template_dir, "*_temp.png")))
@@ -64,7 +64,7 @@ def load_all_pairs(template_dir, test_dir):
     return image_pairs
 
 def process_single_pair(template_path, test_path, use_xor=True):
-    """Process one pair and return results."""
+    """Process image pair"""
     template_img = cv2.imread(template_path)
     test_img = cv2.imread(test_path)
     

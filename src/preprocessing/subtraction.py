@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 
 def preprocess_images(test_img, template_img):
-    """Prep images for subtraction."""
+    """Normalize image pair"""
     if len(test_img.shape) == 3:
         test_gray = cv2.cvtColor(test_img, cv2.COLOR_BGR2GRAY)
     else:
@@ -21,7 +21,7 @@ def preprocess_images(test_img, template_img):
     return test_norm, template_norm
 
 def image_subtraction(test_img, template_img):
-    """Subtract, threshold, and clean defects mask."""
+    """Detect image differences"""
     test_proc, template_proc = preprocess_images(test_img, template_img)
     diff = cv2.absdiff(test_proc, template_proc)
     _, thresh = cv2.threshold(diff, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
@@ -32,7 +32,7 @@ def image_subtraction(test_img, template_img):
     return diff, thresh, cleaned
 
 def highlight_defects(test_img, defect_mask, color=(0, 0, 255)):
-    """Overlay defects in color."""
+    """Color defect overlay"""
     if len(test_img.shape) == 3:
         result_img = test_img.copy()
     else:

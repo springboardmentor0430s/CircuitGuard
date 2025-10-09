@@ -22,7 +22,6 @@ def xor_defect_detection(test_img, template_img):
     cleaned_defects = cv2.morphologyEx(combined_defects, cv2.MORPH_OPEN, kernel)
     cleaned_defects = remove_tiny_components_with_validation(cleaned_defects, min_size=5)
     
-    print(f"Defects: {np.count_nonzero(cleaned_defects)}")
     
     return {
         'xor': xor_result,
