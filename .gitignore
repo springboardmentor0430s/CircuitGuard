@@ -106,6 +106,8 @@ credentials/
 data/raw/
 data/processed/
 data/interim/
+data/defect_dataset/
+
 
 # keep annotation text files but ignore large binary intermediates
 data/interim/*.pkl
