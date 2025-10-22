@@ -2,7 +2,6 @@ import torch
 import torch.nn as nn
 import cv2
 import numpy as np
-import matplotlib.pyplot as plt
 import os
 import sys
 from datetime import datetime
@@ -13,18 +12,15 @@ sys.path.append('.')
 from model.efficientnet import PCBDefectClassifier
 
 class PCBDefectPredictor:
+    """Streamlined PCB defect predictor"""
+    
     def __init__(self, model_path='model/best_model.pth'):
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-        self.model_path = model_path
         
-        # Class names (match training)
+        # Class names
         self.class_names = {
-            0: 'missing_hole',
-            1: 'mouse_bite', 
-            2: 'open_circuit',
-            3: 'short',
-            4: 'spur',
-            5: 'spurious_copper'
+            0: 'missing_hole', 1: 'mouse_bite', 2: 'open_circuit',
+            3: 'short', 4: 'spur', 5: 'spurious_copper'
         }
         
         # Load model
@@ -32,26 +28,20 @@ class PCBDefectPredictor:
         checkpoint = torch.load(model_path, map_location=self.device)
         self.model.load_state_dict(checkpoint['model_state_dict'])
         self.model.eval()
-        
-        print(f"✅ Loaded model from {model_path}")
-        print(f"📊 Model accuracy during training: {checkpoint['accuracy']:.2f}%")
     
     def preprocess_image(self, image, image_size=128):
         """Preprocess image for inference"""
         if len(image.shape) == 3:
             image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         
-        # Resize
         image = cv2.resize(image, (image_size, image_size))
+        image = image.astype(np.float32) / 255.0
         
-        # Normalize (same as training) and ensure float32
-        image = image.astype(np.float32) / 255.0  # Ensure float32
         mean = np.array([0.485, 0.456, 0.406], dtype=np.float32)
         std = np.array([0.229, 0.224, 0.225], dtype=np.float32)
         image = (image - mean) / std
         
-        # Convert to tensor and ensure float32
-        image = torch.from_numpy(image).permute(2, 0, 1).unsqueeze(0).float()  # Added .float() here
+        image = torch.from_numpy(image).permute(2, 0, 1).unsqueeze(0).float()
         return image.to(self.device)
     
     def predict_single(self, image):
@@ -71,37 +61,24 @@ class PCBDefectPredictor:
     
     def predict_batch(self, image_list):
         """Predict defect types for multiple images"""
-        results = []
-        for image in image_list:
-            results.append(self.predict_single(image))
-        return results
+        return [self.predict_single(image) for image in image_list]
     
     def visualize_prediction(self, image, prediction, save_path=None):
         """Visualize prediction with annotation"""
-        # Create copy for visualization
         vis_image = image.copy()
         if len(vis_image.shape) == 2:
             vis_image = cv2.cvtColor(vis_image, cv2.COLOR_GRAY2BGR)
         
-        # Add prediction text
         class_name = prediction['class_name']
         confidence = prediction['confidence']
-        
         text = f"{class_name} ({confidence:.2f})"
         
-        # Choose color based on confidence
-        if confidence > 0.9:
-            color = (0, 255, 0)  # Green
-        elif confidence > 0.7:
-            color = (255, 255, 0)  # Yellow
-        else:
-            color = (0, 0, 255)  # Red
+        # Color based on confidence
+        color = (0, 255, 0) if confidence > 0.9 else (255, 255, 0) if confidence > 0.7 else (0, 0, 255)
         
-        # Add text to image
-        cv2.putText(vis_image, text, (10, 30), 
-                   cv2.FONT_HERSHEY_SIMPLEX, 0.7, color, 2)
+        cv2.putText(vis_image, text, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, color, 2)
         
-        # Add confidence bar
+        # Confidence bar
         bar_width = int(confidence * 100)
         cv2.rectangle(vis_image, (10, 40), (10 + bar_width, 50), color, -1)
         
@@ -113,8 +90,6 @@ class PCBDefectPredictor:
     def process_test_images(self, test_dir='data/defect_dataset/test', output_dir='annotated_results'):
         """Process all test images and generate annotated results"""
         os.makedirs(output_dir, exist_ok=True)
-        
-        print(f"🔍 Processing test images from {test_dir}")
         
         # Get all test images
         all_images = []
@@ -133,17 +108,14 @@ class PCBDefectPredictor:
                         all_images.append(image)
                         image_paths.append((img_path, defect_type))
         
-        print(f"📁 Found {len(all_images)} test images")
-        
         # Run predictions
         predictions = self.predict_batch(all_images)
         
-        # Generate annotated images and statistics
+        # Generate results
         correct_predictions = 0
         results = []
         
         for i, (prediction, (img_path, true_class)) in enumerate(zip(predictions, image_paths)):
-            # Check if prediction is correct
             is_correct = (prediction['class_name'] == true_class)
             if is_correct:
                 correct_predictions += 1
@@ -151,7 +123,7 @@ class PCBDefectPredictor:
             # Save annotated image
             base_name = os.path.basename(img_path)
             output_path = os.path.join(output_dir, f"pred_{base_name}")
-            annotated_img = self.visualize_prediction(all_images[i], prediction, output_path)
+            self.visualize_prediction(all_images[i], prediction, output_path)
             
             results.append({
                 'image': base_name,
@@ -164,23 +136,17 @@ class PCBDefectPredictor:
         # Calculate accuracy
         accuracy = (correct_predictions / len(all_images)) * 100
         
-        print(f"\n📊 Test Results:")
-        print(f"   Total Images: {len(all_images)}")
-        print(f"   Correct Predictions: {correct_predictions}")
-        print(f"   Accuracy: {accuracy:.2f}%")
-        print(f"   Annotated images saved to: {output_dir}")
-        
         # Save results to CSV
         import pandas as pd
         df = pd.DataFrame(results)
         df.to_csv('prediction_results.csv', index=False)
         
         # Generate summary
-        self.generate_prediction_summary(results, accuracy)
+        self._generate_prediction_summary(results, accuracy)
         
         return results, accuracy
     
-    def generate_prediction_summary(self, results, accuracy):
+    def _generate_prediction_summary(self, results, accuracy):
         """Generate prediction summary report"""
         summary = {
             'total_predictions': len(results),
@@ -206,27 +172,15 @@ class PCBDefectPredictor:
         import json
         with open('prediction_summary.json', 'w') as f:
             json.dump(summary, f, indent=2)
-        
-        print(f"\n📋 Prediction Summary:")
-        print(f"   Overall Accuracy: {accuracy:.2f}%")
-        print(f"   Average Confidence: {summary['average_confidence']:.3f}")
-        print("   Class-wise Performance:")
-        for class_name, stats in summary['class_accuracy'].items():
-            print(f"     {class_name:15}: {stats['accuracy']:6.2f}% ({stats['correct']}/{stats['total']})")
 
 def main():
-    # Example usage
+    """Example usage"""
     predictor = PCBDefectPredictor()
     
     # Process all test images
     results, accuracy = predictor.process_test_images()
     
-    # Example single prediction
-    print("\n🎯 Single Prediction Example:")
-    sample_image = np.random.randint(0, 255, (128, 128, 3), dtype=np.uint8)
-    prediction = predictor.predict_single(sample_image)
-    print(f"   Predicted: {prediction['class_name']}")
-    print(f"   Confidence: {prediction['confidence']:.3f}")
+    print(f"Accuracy: {accuracy:.2f}%")
 
 if __name__ == "__main__":
     main()
