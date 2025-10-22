@@ -7,221 +7,290 @@ from torch.utils.data import DataLoader
 import matplotlib.pyplot as plt
 import time
 from tqdm import tqdm
+import json
+import pandas as pd
+import numpy as np
+from datetime import datetime
 
+# Add the current directory to Python path
 sys.path.append('.')
 
 from model.efficientnet import PCBDefectClassifier, save_checkpoint
 from src.data.dataset_loader import PCBDefectDataset
 
+class TrainingProgress:
+    """Simple class to track and save training progress"""
+    def __init__(self):
+        self.epochs = []
+        self.train_losses = []
+        self.val_losses = []
+        self.train_accuracies = []
+        self.val_accuracies = []
+        self.start_time = time.time()
+        
+    def add_epoch(self, epoch, train_loss, val_loss, train_acc, val_acc):
+        """Add epoch results"""
+        self.epochs.append(epoch)
+        self.train_losses.append(train_loss)
+        self.val_losses.append(val_loss)
+        self.train_accuracies.append(train_acc)
+        self.val_accuracies.append(val_acc)
+        
+        # Auto-save progress after each epoch
+        self.save_progress()
+    
+    def save_progress(self):
+        """Save progress to file"""
+        progress = {
+            'epochs': self.epochs,
+            'train_losses': self.train_losses,
+            'val_losses': self.val_losses,
+            'train_accuracies': self.train_accuracies,
+            'val_accuracies': self.val_accuracies,
+            'total_time': time.time() - self.start_time,
+            'last_update': datetime.now().isoformat()
+        }
+        
+        # Save as JSON
+        with open('training_progress.json', 'w') as f:
+            json.dump(progress, f, indent=2)
+    
+    def generate_final_plots(self):
+        """Generate final overview plots"""
+        if len(self.epochs) == 0:
+            return
+            
+        plt.figure(figsize=(15, 5))
+        
+        # Plot 1: Accuracy Overview
+        plt.subplot(1, 3, 1)
+        plt.plot(self.epochs, self.train_accuracies, 'b-', label='Train Accuracy', linewidth=2, marker='o')
+        plt.plot(self.epochs, self.val_accuracies, 'r-', label='Val Accuracy', linewidth=2, marker='s')
+        
+        # Mark milestones
+        for milestone in [80, 85, 90, 95, 97, 98]:
+            if max(self.val_accuracies) >= milestone:
+                plt.axhline(y=milestone, color='gray', linestyle=':', alpha=0.5)
+                plt.text(len(self.epochs)-0.3, milestone+0.5, f'{milestone}%', fontsize=9)
+        
+        plt.xlabel('Epoch')
+        plt.ylabel('Accuracy (%)')
+        plt.title('Accuracy Progress')
+        plt.legend()
+        plt.grid(True, alpha=0.3)
+        
+        # Plot 2: Loss Overview
+        plt.subplot(1, 3, 2)
+        plt.plot(self.epochs, self.train_losses, 'b-', label='Train Loss', linewidth=2)
+        plt.plot(self.epochs, self.val_losses, 'r-', label='Val Loss', linewidth=2)
+        plt.xlabel('Epoch')
+        plt.ylabel('Loss')
+        plt.title('Loss Progress')
+        plt.legend()
+        plt.grid(True, alpha=0.3)
+        
+        # Plot 3: Performance Summary
+        plt.subplot(1, 3, 3)
+        if self.val_accuracies:
+            best_val = max(self.val_accuracies)
+            final_val = self.val_accuracies[-1]
+            final_train = self.train_accuracies[-1]
+            
+            metrics = [final_train, final_val, best_val]
+            labels = [f'Final Train\n{final_train:.1f}%', 
+                     f'Final Val\n{final_val:.1f}%', 
+                     f'Best Val\n{best_val:.1f}%']
+            
+            bars = plt.bar(labels, metrics, color=['lightblue', 'lightcoral', 'lightgreen'], alpha=0.8)
+            
+            for bar, metric in zip(bars, metrics):
+                plt.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.5,
+                        f'{metric:.1f}%', ha='center', va='bottom', fontweight='bold')
+            
+            plt.ylabel('Accuracy (%)')
+            plt.title('Final Performance')
+        
+        plt.tight_layout()
+        plt.savefig('training_overview.png', dpi=150, bbox_inches='tight')
+        plt.show()
+        
+        # Print final report
+        self.print_final_report()
+    
+    def print_final_report(self):
+        """Print final training report"""
+        if not self.val_accuracies:
+            return
+            
+        print("\n" + "="*50)
+        print("📊 TRAINING COMPLETION REPORT")
+        print("="*50)
+        print(f"Total Epochs Completed: {len(self.epochs)}/10")
+        print(f"Best Validation Accuracy: {max(self.val_accuracies):.2f}%")
+        print(f"Final Validation Accuracy: {self.val_accuracies[-1]:.2f}%")
+        print(f"Total Training Time: {(time.time() - self.start_time)/60:.1f} minutes")
+        
+        # Check milestones
+        milestones = [90, 95, 97]
+        achieved = [m for m in milestones if max(self.val_accuracies) >= m]
+        if achieved:
+            print(f"Milestones Achieved: {achieved}")
+        
+        print("="*50)
 
 def main():
+    print("🚀 Starting PCB Defect Classification Training (10 Epochs)")
+    print("=" * 50)
     
+    # Initialize progress tracker
+    progress = TrainingProgress()
+    
+    # Set device
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    print(f"Using device: {device}")
     
-    # Check if dataset exists
-    dataset_path = 'data/defect_dataset'
-    if not os.path.exists(dataset_path):
-        print(f"Dataset not found at {dataset_path}")
-        print("Please run: python data/prepare_dataset.py first")
-        return
-    
-    # Create datasets
-    print("Loading datasets...")
-    train_dataset = PCBDefectDataset(os.path.join(dataset_path, 'train'))
-    val_dataset = PCBDefectDataset(os.path.join(dataset_path, 'val'))
-    
-    print(f"✅ Training samples: {len(train_dataset)}")
-    print(f"✅ Validation samples: {len(val_dataset)}")
-    
-    train_dist = train_dataset.get_class_distribution()
-    print("📊 Training class distribution:")
-    for defect_type, count in train_dist.items():
-        print(f"   {defect_type}: {count} samples")
-    
-    # Calculate optimal batch size to avoid last single-sample batch
-    total_train = len(train_dataset)
-    batch_size = 16
-    
-    if total_train % batch_size == 1:
-        batch_size = 15  
-        print(f"Adjusted batch size to {batch_size} to avoid single-sample batches")
-    else:
-        print(f"Using batch size: {batch_size}")
-    
-    # data loaders to avoid single-sample batches
-    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=0, drop_last=True)
-    val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False, num_workers=0, drop_last=False)
+    try:
+        # Check if dataset exists
+        dataset_path = 'data/defect_dataset'
+        if not os.path.exists(dataset_path):
+            print(f"❌ Dataset not found at {dataset_path}")
+            print("Please run: python data/prepare_dataset.py first")
+            return
         
-    model = PCBDefectClassifier(num_classes=6).to(device)
-    
-    # Print model summary
-    total_params = sum(p.numel() for p in model.parameters())
-    trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
-    print(f"✅ Model initialized with {total_params:,} total parameters")
-    print(f"✅ Trainable parameters: {trainable_params:,}")
-    
-    # Loss and optimizer
-    criterion = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(model.parameters(), lr=0.001, weight_decay=1e-4)
-    scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.1)
-    
-    # Training loop
-    train_losses = []
-    val_losses = []
-    train_accuracies = []
-    val_accuracies = []
-    
-    best_accuracy = 0
-    current_lr = 0.001
-
-    print("Starting training...")
-    print("=" * 60)
-    
-    # Early stopping parameters
-    patience = 3
-    patience_counter = 0
-    best_val_loss = float('inf')
-    
-    for epoch in range(30):
-        epoch_start_time = time.time()
+        # Create datasets
+        print("📁 Loading datasets...")
+        train_dataset = PCBDefectDataset(os.path.join(dataset_path, 'train'))
+        val_dataset = PCBDefectDataset(os.path.join(dataset_path, 'val'))
         
-        # Training phase
-        model.train()
-        train_loss = 0.0
-        train_correct = 0
-        train_total = 0
+        print(f"✅ Training samples: {len(train_dataset)}")
+        print(f"✅ Validation samples: {len(val_dataset)}")
         
-        print(f"\n📈 Epoch {epoch+1}/30")
-        print("─" * 40)
+        # Set batch size
+        batch_size = 16
+        if len(train_dataset) % batch_size == 1:
+            batch_size = 15
         
-        # Training progress bar
-        train_pbar = tqdm(train_loader, desc=f"Training Epoch {epoch+1}")
+        # Create data loaders
+        train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=0, drop_last=True)
+        val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False, num_workers=0, drop_last=False)
         
-        for batch_idx, (data, targets) in enumerate(train_pbar):
-            try:
-                data, targets = data.to(device), targets.to(device)
-                
-                # Skip if batch has only 1 sample (safety check)
-                if data.size(0) <= 1:
-                    continue
-                
-                optimizer.zero_grad()
-                outputs = model(data)
-                loss = criterion(outputs, targets)
-                loss.backward()
-                optimizer.step()
-                
-                train_loss += loss.item()
-                _, predicted = outputs.max(1)
-                train_total += targets.size(0)
-                train_correct += predicted.eq(targets).sum().item()
-                
-                # Update progress bar
-                current_acc = 100. * train_correct / train_total
-                train_pbar.set_postfix({
-                    'Loss': f'{loss.item():.4f}',
-                    'Acc': f'{current_acc:.2f}%',
-                    'Batch': f'{batch_idx+1}/{len(train_loader)}'
-                })
-                
-                    
-            except Exception as e:
-                print(f"❌ Error in batch {batch_idx}: {e}")
-                continue
+        # Initialize model
+        print("🧠 Initializing EfficientNet-B4...")
+        model = PCBDefectClassifier(num_classes=6).to(device)
         
-        train_pbar.close()
+        # Loss and optimizer
+        criterion = nn.CrossEntropyLoss()
+        optimizer = optim.Adam(model.parameters(), lr=0.001)
+        scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.5)
         
-        if train_total > 0:
-            train_accuracy = 100. * train_correct / train_total
-            train_loss = train_loss / len(train_loader)
-        else:
-            print("⚠️  No training data processed this epoch")
-            continue
+        best_accuracy = 0
         
-        # Validation phase
-        model.eval()
-        val_loss = 0.0
-        val_correct = 0
-        val_total = 0
+        print("\n🎯 Starting 10-epoch training...")
+        print("=" * 50)
         
-        print("📊 Running validation...")
-        with torch.no_grad():
-            val_pbar = tqdm(val_loader, desc="Validating")
-            for data, targets in val_pbar:
+        for epoch in range(10):
+            epoch_start = time.time()
+            
+            # Training
+            model.train()
+            train_loss = 0.0
+            train_correct = 0
+            train_total = 0
+            
+            train_pbar = tqdm(train_loader, desc=f'Epoch {epoch+1}/10')
+            for data, targets in train_pbar:
                 try:
                     data, targets = data.to(device), targets.to(device)
+                    
+                    if data.size(0) <= 1:
+                        continue
+                    
+                    optimizer.zero_grad()
                     outputs = model(data)
                     loss = criterion(outputs, targets)
+                    loss.backward()
+                    optimizer.step()
                     
-                    val_loss += loss.item()
+                    train_loss += loss.item()
                     _, predicted = outputs.max(1)
-                    val_total += targets.size(0)
-                    val_correct += predicted.eq(targets).sum().item()
+                    train_total += targets.size(0)
+                    train_correct += predicted.eq(targets).sum().item()
                     
-                    current_val_acc = 100. * val_correct / val_total
-                    val_pbar.set_postfix({'Acc': f'{current_val_acc:.2f}%'})
+                    current_acc = 100. * train_correct / train_total
+                    train_pbar.set_postfix({'Loss': f'{loss.item():.4f}', 'Acc': f'{current_acc:.2f}%'})
+                    
                 except Exception as e:
-                    print(f"❌ Validation error: {e}")
                     continue
             
-            val_pbar.close()
-        
-        if val_total > 0:
+            train_pbar.close()
+            
+            if train_total == 0:
+                continue
+                
+            train_accuracy = 100. * train_correct / train_total
+            train_loss = train_loss / len(train_loader)
+            
+            # Validation
+            model.eval()
+            val_loss = 0.0
+            val_correct = 0
+            val_total = 0
+            
+            with torch.no_grad():
+                for data, targets in val_loader:
+                    try:
+                        data, targets = data.to(device), targets.to(device)
+                        outputs = model(data)
+                        loss = criterion(outputs, targets)
+                        
+                        val_loss += loss.item()
+                        _, predicted = outputs.max(1)
+                        val_total += targets.size(0)
+                        val_correct += predicted.eq(targets).sum().item()
+                    except Exception as e:
+                        continue
+            
+            if val_total == 0:
+                continue
+                
             val_accuracy = 100. * val_correct / val_total
             val_loss = val_loss / len(val_loader)
-        else:
-            print("⚠️  No validation data processed")
-            continue
-        
-        scheduler.step()
-        current_lr = scheduler.get_last_lr()[0]
-        
-        # Store metrics
-        train_losses.append(train_loss)
-        val_losses.append(val_loss)
-        train_accuracies.append(train_accuracy)
-        val_accuracies.append(val_accuracy)
-        
-        epoch_time = time.time() - epoch_start_time
-        
-        # Print epoch summary
-        print(f"✅ Epoch {epoch+1} Summary:")
-        print(f"   ⏱️  Time: {epoch_time:.2f}s")
-        print(f"   📚 Learning Rate: {current_lr:.6f}")
-        print(f"   🏋️  Train Loss: {train_loss:.4f}, Train Acc: {train_accuracy:.2f}%")
-        print(f"   🧪 Val Loss: {val_loss:.4f}, Val Acc: {val_accuracy:.2f}%")
-        
-        # Early stopping check
-        if val_loss < best_val_loss:
-            best_val_loss = val_loss
-            patience_counter = 0
-        else:
-            patience_counter += 1
-            print(f"   ⚠️  Early stopping counter: {patience_counter}/{patience}")
-        
-        # Save best model
-        if val_accuracy > best_accuracy:
-            best_accuracy = val_accuracy
-            save_checkpoint(
-                model, optimizer, epoch, val_accuracy,
-                'model/best_model.pth'
-            )
-            print(f"   💾 NEW BEST MODEL! Accuracy: {val_accuracy:.2f}%")
-        
-        # Check early stopping
-        if patience_counter >= patience:
-            print(f"🛑 Early stopping triggered after {epoch+1} epochs")
-            break
             
-        # Check if target accuracy reached
-        if val_accuracy >= 95 and epoch >= 2:
-            print(f"🎯 TARGET REACHED! {val_accuracy:.2f}% accuracy - Consider stopping")
+            scheduler.step()
+            epoch_time = time.time() - epoch_start
+            
+            # Save progress
+            progress.add_epoch(epoch+1, train_loss, val_loss, train_accuracy, val_accuracy)
+            
+            # Print epoch results
+            print(f"📊 Epoch {epoch+1}: Train Acc: {train_accuracy:.2f}%, Val Acc: {val_accuracy:.2f}%, Time: {epoch_time:.1f}s")
+            
+            # Save best model
+            if val_accuracy > best_accuracy:
+                best_accuracy = val_accuracy
+                save_checkpoint(model, optimizer, epoch, val_accuracy, 'model/best_model.pth')
+                print(f"   💾 New best model: {val_accuracy:.2f}%")
+            
+            # Early success check
+            if val_accuracy >= 97 and epoch >= 2:
+                print(f"🎯 Target achieved! {val_accuracy:.2f}% accuracy at epoch {epoch+1}")
         
-        print("─" * 40)
+        print("\n✅ Training completed successfully!")
+        
+    except KeyboardInterrupt:
+        print(f"\n🛑 Training interrupted after {len(progress.epochs)} epochs")
+        
+    except Exception as e:
+        print(f"\n❌ Training error: {e}")
     
-    
-    print(f"\n💡 Total training time: {time.time() - start_time:.2f} seconds")
+    finally:
+        # Always generate final overview
+        if len(progress.epochs) > 0:
+            print("\n📈 Generating training overview...")
+            progress.generate_final_plots()
+            print("💾 Progress saved to: training_progress.json, training_overview.png")
+        else:
+            print("❌ No training data collected")
 
 if __name__ == "__main__":
-    start_time = time.time()
     main()

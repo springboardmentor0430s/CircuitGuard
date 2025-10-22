@@ -108,6 +108,7 @@ data/processed/
 data/interim/
 data/defect_dataset/
 
+annotated_results
 
 # keep annotation text files but ignore large binary intermediates
 data/interim/*.pkl
