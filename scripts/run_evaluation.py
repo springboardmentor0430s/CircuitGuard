@@ -19,7 +19,7 @@ def main():
     
     print("\n2. Generating prediction results...")
     try:
-        from inference.predict import main as predict_main
+        from src.inference.predict import main as predict_main
         predict_main()
     except Exception as e:
         print(f"   ⚠️  Prediction step encountered an error: {e}")
@@ -28,7 +28,7 @@ def main():
     
     print("\n3. Testing complete pipeline integration...")
     try:
-        from inference.integrate_pipeline import main as pipeline_main
+        from src.inference.integrate_pipeline import main as pipeline_main
         pipeline_main()
     except Exception as e:
         print(f"   ⚠️  Pipeline test skipped: {e}")
