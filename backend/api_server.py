@@ -21,8 +21,19 @@ app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = 10 * 1024 * 1024
 
 # allow origins from env or default
-allowed_origins = os.environ.get('FRONTEND_ORIGINS', 'https://circuit-guard.vercel.app')
-CORS(app, origins=[o.strip() for o in allowed_origins.split(',') if o.strip()])
+allowed_origins = os.environ.get('FRONTEND_ORIGINS', 'https://circuit-guard.vercel.app,http://localhost:3000')
+print(f"🔒 Allowed CORS origins: {allowed_origins}")
+
+# Split origins string and clean
+origins = [o.strip() for o in allowed_origins.split(',') if o.strip()]
+
+# Enable CORS with proper config
+CORS(app, 
+     origins=origins,
+     methods=['GET', 'POST', 'OPTIONS'],
+     allow_headers=['Content-Type'],
+     supports_credentials=True,
+     max_age=3600)
 
 # lazy pipeline (do not load model at import)
 _pipeline = None
