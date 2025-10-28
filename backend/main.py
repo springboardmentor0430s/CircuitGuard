@@ -97,12 +97,20 @@ class CircuitGuardPipeline:
             }
 
     def create_annotated_image(self, image, bounding_boxes, classifications):
-        """Create annotated image with simple blue boxes and labels"""
+        """Create annotated image with color-coded boxes and labels"""
         # Create copy for annotation
         annotated_img = image.copy()
         
-        # Blue color for all defects (BGR)
-        color = (255, 0, 0)
+        # Color mapping for different defect types (BGR format for OpenCV)
+        defect_colors = {
+            'missing_hole': (255, 165, 0),      # Orange
+            'mouse_bite': (0, 255, 255),        # Yellow
+            'open_circuit': (255, 0, 0),        # Blue
+            'short': (0, 0, 255),               # Red
+            'spur': (0, 255, 0),                # Green
+            'spurious_copper': (255, 0, 255),   # Magenta
+            'unknown': (128, 128, 128)          # Gray
+        }
         
         # Draw each bounding box with classification
         for i, (x, y, w, h) in enumerate(bounding_boxes):
@@ -110,18 +118,21 @@ class CircuitGuardPipeline:
                 class_info = classifications[i]
                 defect_type = class_info.get('class_name', 'unknown')
                 
-                # Draw bounding box
-                cv2.rectangle(annotated_img, (x, y), (x + w, y + h), color, 2)
+                # Get color for this defect type
+                color = defect_colors.get(defect_type, defect_colors['unknown'])
                 
-                # Create label text (just defect name)
-                label = f"{defect_type}"
+                # Draw bounding box with thicker line for visibility
+                cv2.rectangle(annotated_img, (x, y), (x + w, y + h), color, 3)
                 
-                # Draw text (with a filled background for readability)
-                (text_w, text_h), baseline = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 1)
-                cv2.rectangle(annotated_img, (x, y - text_h - baseline - 6), (x + text_w + 6, y), color, -1)
+                # Create label text (defect name)
+                label = f"{defect_type.replace('_', ' ')}"
+                
+                # Draw text with a filled background for readability
+                (text_w, text_h), baseline = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.6, 2)
+                cv2.rectangle(annotated_img, (x, y - text_h - baseline - 10), (x + text_w + 10, y), color, -1)
                 cv2.putText(annotated_img, label, 
-                           (x + 3, y - 4), 
-                           cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
+                           (x + 5, y - 5), 
+                           cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
         
         return annotated_img
     
