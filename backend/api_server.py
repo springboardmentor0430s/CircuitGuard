@@ -15,7 +15,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'backend'))
 from main import CircuitGuardPipeline
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, origins=["https://circuit-guard.vercel.app"])
 
 # Initialize the pipeline
 pipeline = CircuitGuardPipeline()
