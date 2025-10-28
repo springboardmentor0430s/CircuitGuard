@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
 import os
 import cv2
@@ -8,6 +8,17 @@ import json
 from datetime import datetime
 import tempfile
 import sys
+from reportlab.lib.pagesizes import letter, A4
+from reportlab.lib import colors
+from reportlab.lib.units import inch
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image, PageBreak
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.enums import TA_CENTER, TA_LEFT
+from reportlab.graphics.shapes import Drawing, String
+from reportlab.graphics.charts.barcharts import VerticalBarChart
+from reportlab.graphics.charts.lineplots import LinePlot
+from reportlab.graphics.widgets.markers import makeMarker
+from io import BytesIO
 
 # Add backend directory to path
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'backend'))
@@ -114,6 +125,275 @@ def process_images():
     except Exception as e:
         return jsonify({'error': f'Processing failed: {str(e)}'}), 500
 
+@app.route('/api/process-pdf', methods=['POST'])
+def process_images_pdf():
+    """Process images and return PDF report"""
+    try:
+        # Check if files are present
+        if 'template' not in request.files or 'test' not in request.files:
+            return jsonify({'error': 'Both template and test images are required'}), 400
+        
+        template_file = request.files['template']
+        test_file = request.files['test']
+        
+        if template_file.filename == '' or test_file.filename == '':
+            return jsonify({'error': 'No files selected'}), 400
+        
+        # Create temporary files
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.jpg') as temp_template:
+            template_file.save(temp_template.name)
+            template_path = temp_template.name
+        
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.jpg') as temp_test:
+            test_file.save(temp_test.name)
+            test_path = temp_test.name
+        
+        try:
+            # Process images
+            results = pipeline.process_image_pair(template_path, test_path)
+            
+            if results is None:
+                return jsonify({'error': 'Failed to process images'}), 500
+            
+            # Prepare defects data
+            defects = []
+            for i, classification in enumerate(results['classifications']):
+                if i < len(results['bounding_boxes']):
+                    x, y, w, h = results['bounding_boxes'][i]
+                    defect_data = {
+                        'id': i + 1,
+                        'class_name': classification['class_name'],
+                        'class_id': classification['class_id'],
+                        'confidence': classification.get('confidence', 0.0),
+                        'bbox': {'x': int(x), 'y': int(y), 'width': int(w), 'height': int(h)},
+                        'area': int(w * h),
+                        'center': {'x': int(x + w/2), 'y': int(y + h/2)}
+                    }
+                    defects.append(defect_data)
+            
+            # Generate PDF
+            pdf_buffer = generate_pdf_report(
+                results=results,
+                defects=defects,
+                defect_count=results['defect_count'],
+                frequency_analysis=get_frequency_analysis(defects),
+                confidence_stats=get_confidence_stats(defects)
+            )
+            
+            # Generate filename with timestamp
+            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+            filename = f'CircuitGuard_Report_{timestamp}.pdf'
+            
+            return send_file(
+                pdf_buffer,
+                mimetype='application/pdf',
+                as_attachment=True,
+                download_name=filename
+            )
+            
+        finally:
+            # Clean up temporary files
+            if os.path.exists(template_path):
+                os.unlink(template_path)
+            if os.path.exists(test_path):
+                os.unlink(test_path)
+                
+    except Exception as e:
+        return jsonify({'error': f'PDF generation failed: {str(e)}'}), 500
+
+def generate_pdf_report(results, defects, defect_count, frequency_analysis, confidence_stats):
+    """Generate PDF report with images and analysis"""
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=A4, topMargin=0.5*inch, bottomMargin=0.5*inch)
+    story = []
+    styles = getSampleStyleSheet()
+    
+    # Custom styles
+    title_style = ParagraphStyle(
+        'CustomTitle',
+        parent=styles['Heading1'],
+        fontSize=24,
+        textColor=colors.HexColor('#1a73e8'),
+        spaceAfter=20,
+        alignment=TA_CENTER
+    )
+    
+    heading_style = ParagraphStyle(
+        'CustomHeading',
+        parent=styles['Heading2'],
+        fontSize=14,
+        textColor=colors.HexColor('#1a73e8'),
+        spaceAfter=12,
+        spaceBefore=12
+    )
+    
+    # Title
+    story.append(Paragraph("CircuitGuard Defect Detection Report", title_style))
+    story.append(Spacer(1, 0.2*inch))
+    
+    # Summary Information
+    story.append(Paragraph("Report Summary", heading_style))
+    quality_status = 'PASS - No Defects' if defect_count == 0 else f'FAIL - {defect_count} Defects Found'
+    summary_data = [
+        ['Report Generated:', datetime.now().strftime('%Y-%m-%d %H:%M:%S')],
+        ['Total Defects Found:', str(defect_count)],
+        ['Quality Status:', quality_status]
+    ]
+    
+    summary_table = Table(summary_data, colWidths=[2.5*inch, 3.5*inch])
+    summary_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (0, -1), colors.HexColor('#f0f0f0')),
+        ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, -1), 10),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+        ('TOPPADDING', (0, 0), (-1, -1), 8),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.grey)
+    ]))
+    story.append(summary_table)
+    story.append(Spacer(1, 0.3*inch))
+    
+    # Save images to temporary files for PDF
+    temp_images = []
+    try:
+        # Annotated Result Image
+        story.append(Paragraph("Annotated Result", heading_style))
+        result_img_path = save_cv2_image_temp(results['result'])
+        temp_images.append(result_img_path)
+        story.append(Image(result_img_path, width=5*inch, height=3.75*inch))
+        story.append(Spacer(1, 0.3*inch))
+        
+        
+        # Frequency Analysis
+        if frequency_analysis and defect_count > 0:
+            story.append(Paragraph("Defect Type Distribution", heading_style))
+            freq_data = [['Defect Type', 'Count', 'Percentage']]
+            for defect_type, data in frequency_analysis.items():
+                freq_data.append([
+                    defect_type.replace('_', ' ').title(),
+                    str(data['count']),
+                    f"{data['percentage']}%"
+                ])
+            
+            freq_table = Table(freq_data, colWidths=[2.5*inch, 1.5*inch, 1.5*inch])
+            freq_table.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1a73e8')),
+                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                ('FONTSIZE', (0, 0), (-1, -1), 10),
+                ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+                ('TOPPADDING', (0, 0), (-1, -1), 8),
+                ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+                ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#f0f0f0')])
+            ]))
+            story.append(freq_table)
+            story.append(Spacer(1, 0.3*inch))
+        
+        # Confidence Statistics
+        if confidence_stats and defect_count > 0:
+            story.append(Paragraph("Confidence Statistics", heading_style))
+            conf_data = [
+                ['Metric', 'Value'],
+                ['Average Confidence', f"{confidence_stats['average']*100:.1f}%"],
+                ['Minimum Confidence', f"{confidence_stats['min']*100:.1f}%"],
+                ['Maximum Confidence', f"{confidence_stats['max']*100:.1f}%"],
+                ['High Confidence (≥80%)', str(confidence_stats['high_confidence_count'])],
+                ['Medium Confidence (50-80%)', str(confidence_stats['medium_confidence_count'])],
+                ['Low Confidence (<50%)', str(confidence_stats['low_confidence_count'])]
+            ]
+            
+            conf_table = Table(conf_data, colWidths=[3*inch, 2*inch])
+            conf_table.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1a73e8')),
+                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                ('FONTSIZE', (0, 0), (-1, -1), 10),
+                ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+                ('TOPPADDING', (0, 0), (-1, -1), 8),
+                ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+                ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#f0f0f0')])
+            ]))
+            story.append(conf_table)
+            story.append(Spacer(1, 0.3*inch))
+        
+        
+        # Detailed Defects List
+        if defects:
+            story.append(Paragraph("Detailed Defect List", heading_style))
+            defect_data = [['ID', 'Type', 'Confidence', 'Position (x,y)', 'Size (w×h)']]
+            
+            for defect in defects:
+                defect_data.append([
+                    str(defect['id']),
+                    defect['class_name'].replace('_', ' ').title(),
+                    f"{defect['confidence']*100:.1f}%",
+                    f"({defect['bbox']['x']}, {defect['bbox']['y']})",
+                    f"{defect['bbox']['width']}×{defect['bbox']['height']}"
+                ])
+            
+            defect_table = Table(defect_data, colWidths=[0.5*inch, 1.8*inch, 1*inch, 1.3*inch, 1*inch])
+            defect_table.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1a73e8')),
+                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                ('FONTSIZE', (0, 0), (-1, -1), 9),
+                ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+                ('TOPPADDING', (0, 0), (-1, -1), 6),
+                ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+                ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#f0f0f0')])
+            ]))
+            story.append(defect_table)
+            story.append(Spacer(1, 0.3*inch))
+        
+        # Reference Images Section
+        story.append(PageBreak())
+        story.append(Paragraph("Reference Images", heading_style))
+        
+        # Template Image
+        story.append(Paragraph("<b>Template Image (Defect-free Reference)</b>", styles['Normal']))
+        story.append(Spacer(1, 0.1*inch))
+        template_img_path = save_cv2_image_temp(results['template'])
+        temp_images.append(template_img_path)
+        story.append(Image(template_img_path, width=4*inch, height=3*inch))
+        story.append(Spacer(1, 0.3*inch))
+        
+        # Test Image
+        story.append(Paragraph("<b>Test Image (Inspected PCB)</b>", styles['Normal']))
+        story.append(Spacer(1, 0.1*inch))
+        test_img_path = save_cv2_image_temp(results['test'])
+        temp_images.append(test_img_path)
+        story.append(Image(test_img_path, width=4*inch, height=3*inch))
+        story.append(Spacer(1, 0.3*inch))
+        
+        # Defect Mask
+        story.append(Paragraph("<b>Defect Detection Mask</b>", styles['Normal']))
+        story.append(Spacer(1, 0.1*inch))
+        mask_img_path = save_cv2_image_temp(results['defect_mask'])
+        temp_images.append(mask_img_path)
+        story.append(Image(mask_img_path, width=4*inch, height=3*inch))
+        
+        # Build PDF
+        doc.build(story)
+        buffer.seek(0)
+        
+        return buffer
+        
+    finally:
+        # Clean up temporary image files
+        for img_path in temp_images:
+            if os.path.exists(img_path):
+                os.unlink(img_path)
+
+def save_cv2_image_temp(cv2_image):
+    """Save OpenCV image to temporary file"""
+    temp_file = tempfile.NamedTemporaryFile(delete=False, suffix='.jpg')
+    cv2.imwrite(temp_file.name, cv2_image)
+    return temp_file.name
+
 def encode_image_to_base64(image):
     """Convert OpenCV image to base64 string"""
     if image is None:
@@ -185,4 +465,5 @@ if __name__ == '__main__':
     print("🚀 Starting CircuitGuard API Server...")
     print("📡 API will be available at: http://localhost:5000")
     print("🔗 Health check: http://localhost:5000/api/health")
+    print("📄 PDF endpoint: http://localhost:5000/api/process-pdf")
     app.run(debug=True, host='0.0.0.0', port=5000)
