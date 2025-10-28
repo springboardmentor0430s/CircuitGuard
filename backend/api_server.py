@@ -14,10 +14,10 @@ from reportlab.lib.units import inch
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image, PageBreak
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.enums import TA_CENTER, TA_LEFT
-from reportlab.graphics.shapes import Drawing, String
+from reportlab.graphics.shapes import Drawing
 from reportlab.graphics.charts.barcharts import VerticalBarChart
-from reportlab.graphics.charts.lineplots import LinePlot
-from reportlab.graphics.widgets.markers import makeMarker
+from reportlab.graphics.charts.piecharts import Pie
+from reportlab.graphics.charts.legends import Legend
 from io import BytesIO
 
 # Add backend directory to path
@@ -201,6 +201,205 @@ def process_images_pdf():
     except Exception as e:
         return jsonify({'error': f'PDF generation failed: {str(e)}'}), 500
 
+def create_defect_type_bar_chart(frequency_analysis, width=400, height=250):
+    """Create a bar chart for defect type distribution"""
+    drawing = Drawing(width, height)
+    
+    if not frequency_analysis:
+        return drawing
+    
+    chart = VerticalBarChart()
+    chart.x = 50
+    chart.y = 50
+    chart.width = width - 100
+    chart.height = height - 100
+    
+    # Prepare data
+    defect_types = list(frequency_analysis.keys())
+    counts = [frequency_analysis[dt]['count'] for dt in defect_types]
+    
+    chart.data = [counts]
+    chart.categoryAxis.categoryNames = [dt.replace('_', ' ').title() for dt in defect_types]
+    
+    # Styling
+    chart.bars[0].fillColor = colors.HexColor('#667eea')
+    chart.valueAxis.valueMin = 0
+    chart.valueAxis.valueMax = max(counts) * 1.2 if counts else 10
+    chart.valueAxis.valueStep = max(1, max(counts) // 5) if counts else 1
+    
+    chart.categoryAxis.labels.boxAnchor = 'ne'
+    chart.categoryAxis.labels.dx = -5
+    chart.categoryAxis.labels.dy = -5
+    chart.categoryAxis.labels.angle = 30
+    chart.categoryAxis.labels.fontSize = 9
+    
+    chart.valueAxis.labels.fontSize = 9
+    
+    drawing.add(chart)
+    return drawing
+
+def create_confidence_distribution_chart(confidence_stats, width=400, height=250):
+    """Create a bar chart for confidence level distribution"""
+    drawing = Drawing(width, height)
+    
+    if not confidence_stats:
+        return drawing
+    
+    chart = VerticalBarChart()
+    chart.x = 50
+    chart.y = 50
+    chart.width = width - 100
+    chart.height = height - 100
+    
+    # Data: High, Medium, Low confidence counts
+    data = [
+        confidence_stats.get('high_confidence_count', 0),
+        confidence_stats.get('medium_confidence_count', 0),
+        confidence_stats.get('low_confidence_count', 0)
+    ]
+    
+    chart.data = [data]
+    chart.categoryAxis.categoryNames = ['High (≥80%)', 'Medium (50-80%)', 'Low (<50%)']
+    
+    # Color coding
+    chart.bars[0].fillColor = colors.HexColor('#10b981')
+    chart.bars[1].fillColor = colors.HexColor('#f59e0b')
+    chart.bars[2].fillColor = colors.HexColor('#ef4444')
+    
+    chart.valueAxis.valueMin = 0
+    chart.valueAxis.valueMax = max(data) * 1.2 if max(data) > 0 else 10
+    chart.valueAxis.valueStep = max(1, max(data) // 5) if max(data) > 0 else 1
+    
+    chart.categoryAxis.labels.fontSize = 9
+    chart.categoryAxis.labels.boxAnchor = 'ne'
+    chart.categoryAxis.labels.dx = -5
+    chart.categoryAxis.labels.dy = -5
+    chart.categoryAxis.labels.angle = 20
+    
+    chart.valueAxis.labels.fontSize = 9
+    
+    drawing.add(chart)
+    return drawing
+
+def create_defect_size_distribution_chart(defects, width=400, height=250):
+    """Create a bar chart showing defect size categories"""
+    drawing = Drawing(width, height)
+    
+    if not defects:
+        return drawing
+    
+    # Categorize defects by size (area in pixels)
+    size_categories = {
+        'Small (<100px²)': 0,
+        'Medium (100-500px²)': 0,
+        'Large (500-1000px²)': 0,
+        'Very Large (>1000px²)': 0
+    }
+    
+    for defect in defects:
+        area = defect.get('area', 0)
+        if area < 100:
+            size_categories['Small (<100px²)'] += 1
+        elif area < 500:
+            size_categories['Medium (100-500px²)'] += 1
+        elif area < 1000:
+            size_categories['Large (500-1000px²)'] += 1
+        else:
+            size_categories['Very Large (>1000px²)'] += 1
+    
+    chart = VerticalBarChart()
+    chart.x = 50
+    chart.y = 50
+    chart.width = width - 100
+    chart.height = height - 100
+    
+    counts = list(size_categories.values())
+    chart.data = [counts]
+    chart.categoryAxis.categoryNames = list(size_categories.keys())
+    
+    # Gradient colors
+    chart.bars[0].fillColor = colors.HexColor('#8b5cf6')
+    
+    chart.valueAxis.valueMin = 0
+    chart.valueAxis.valueMax = max(counts) * 1.2 if max(counts) > 0 else 10
+    chart.valueAxis.valueStep = max(1, max(counts) // 5) if max(counts) > 0 else 1
+    
+    chart.categoryAxis.labels.fontSize = 8
+    chart.categoryAxis.labels.boxAnchor = 'ne'
+    chart.categoryAxis.labels.dx = -5
+    chart.categoryAxis.labels.dy = -5
+    chart.categoryAxis.labels.angle = 25
+    
+    chart.valueAxis.labels.fontSize = 9
+    
+    drawing.add(chart)
+    return drawing
+
+def create_defect_type_pie_chart(frequency_analysis, width=400, height=250):
+    """Create a pie chart for defect type distribution"""
+    drawing = Drawing(width, height)
+    
+    if not frequency_analysis:
+        return drawing
+    
+    pie = Pie()
+    pie.x = 150
+    pie.y = 50
+    pie.width = 150
+    pie.height = 150
+    
+    # Prepare data
+    defect_types = list(frequency_analysis.keys())
+    counts = [frequency_analysis[dt]['count'] for dt in defect_types]
+    
+    pie.data = counts
+    pie.labels = [dt.replace('_', ' ').title() for dt in defect_types]
+    
+    # Color scheme
+    colors_list = [
+        colors.HexColor('#667eea'),
+        colors.HexColor('#764ba2'),
+        colors.HexColor('#f59e0b'),
+        colors.HexColor('#10b981'),
+        colors.HexColor('#ef4444'),
+        colors.HexColor('#8b5cf6')
+    ]
+    
+    for i in range(len(counts)):
+        pie.slices[i].fillColor = colors_list[i % len(colors_list)]
+    
+    pie.slices.strokeWidth = 1
+    pie.slices.strokeColor = colors.white
+    
+    # Add legend
+    legend = Legend()
+    legend.x = 20
+    legend.y = height - 40
+    legend.dx = 8
+    legend.dy = 8
+    legend.fontName = 'Helvetica'
+    legend.fontSize = 8
+    legend.boxAnchor = 'nw'
+    legend.columnMaximum = 6
+    legend.strokeWidth = 0
+    legend.strokeColor = colors.white
+    legend.deltax = 70
+    legend.deltay = 10
+    legend.autoXPadding = 5
+    legend.yGap = 0
+    legend.dxTextSpace = 5
+    legend.alignment = 'right'
+    legend.dividerLines = 1|2|4
+    legend.dividerOffsY = 4.5
+    legend.subCols.rpad = 30
+    
+    legend.colorNamePairs = [(pie.slices[i].fillColor, pie.labels[i]) for i in range(len(counts))]
+    
+    drawing.add(pie)
+    drawing.add(legend)
+    
+    return drawing
+
 def generate_pdf_report(results, defects, defect_count, frequency_analysis, confidence_stats):
     """Generate PDF report with images and analysis"""
     buffer = BytesIO()
@@ -261,13 +460,46 @@ def generate_pdf_report(results, defects, defect_count, frequency_analysis, conf
         story.append(Paragraph("Annotated Result", heading_style))
         result_img_path = save_cv2_image_temp(results['result'])
         temp_images.append(result_img_path)
-        story.append(Image(result_img_path, width=5*inch, height=3.75*inch))
+        story.append(Image(result_img_path, width=5*inch, height=4.75*inch))
         story.append(Spacer(1, 0.3*inch))
         
+        # Charts Section (only if defects exist)
+        if defect_count > 0:
+            story.append(PageBreak())
+            story.append(Paragraph("Statistical Analysis", heading_style))
+            story.append(Spacer(1, 0.2*inch))
+            
+            # Defect Type Distribution - Bar Chart
+            story.append(Paragraph("<b>Defect Type Distribution (Bar Chart)</b>", styles['Normal']))
+            story.append(Spacer(1, 0.1*inch))
+            bar_chart = create_defect_type_bar_chart(frequency_analysis)
+            story.append(bar_chart)
+            story.append(Spacer(1, 0.3*inch))
+            
+            # Defect Type Distribution - Pie Chart
+            story.append(Paragraph("<b>Defect Type Distribution (Pie Chart)</b>", styles['Normal']))
+            story.append(Spacer(1, 0.1*inch))
+            pie_chart = create_defect_type_pie_chart(frequency_analysis)
+            story.append(pie_chart)
+            story.append(Spacer(1, 0.3*inch))
+            
+            # Confidence Distribution
+            story.append(Paragraph("<b>Confidence Level Distribution</b>", styles['Normal']))
+            story.append(Spacer(1, 0.1*inch))
+            conf_chart = create_confidence_distribution_chart(confidence_stats)
+            story.append(conf_chart)
+            story.append(Spacer(1, 0.3*inch))
+            
+            # Defect Size Distribution
+            story.append(Paragraph("<b>Defect Size Distribution</b>", styles['Normal']))
+            story.append(Spacer(1, 0.1*inch))
+            size_chart = create_defect_size_distribution_chart(defects)
+            story.append(size_chart)
+            story.append(Spacer(1, 0.3*inch))
         
-        # Frequency Analysis
+        # Frequency Analysis Table
         if frequency_analysis and defect_count > 0:
-            story.append(Paragraph("Defect Type Distribution", heading_style))
+            story.append(Paragraph("Defect Type Distribution Table", heading_style))
             freq_data = [['Defect Type', 'Count', 'Percentage']]
             for defect_type, data in frequency_analysis.items():
                 freq_data.append([
@@ -319,11 +551,10 @@ def generate_pdf_report(results, defects, defect_count, frequency_analysis, conf
             story.append(conf_table)
             story.append(Spacer(1, 0.3*inch))
         
-        
         # Detailed Defects List
         if defects:
             story.append(Paragraph("Detailed Defect List", heading_style))
-            defect_data = [['ID', 'Type', 'Confidence', 'Position (x,y)', 'Size (w×h)']]
+            defect_data = [['ID', 'Type', 'Confidence', 'Position (x,y)', 'Size (w×h)', 'Area (px²)']]
             
             for defect in defects:
                 defect_data.append([
@@ -331,16 +562,17 @@ def generate_pdf_report(results, defects, defect_count, frequency_analysis, conf
                     defect['class_name'].replace('_', ' ').title(),
                     f"{defect['confidence']*100:.1f}%",
                     f"({defect['bbox']['x']}, {defect['bbox']['y']})",
-                    f"{defect['bbox']['width']}×{defect['bbox']['height']}"
+                    f"{defect['bbox']['width']}×{defect['bbox']['height']}",
+                    str(defect['area'])
                 ])
             
-            defect_table = Table(defect_data, colWidths=[0.5*inch, 1.8*inch, 1*inch, 1.3*inch, 1*inch])
+            defect_table = Table(defect_data, colWidths=[0.4*inch, 1.5*inch, 0.9*inch, 1.1*inch, 0.9*inch, 0.8*inch])
             defect_table.setStyle(TableStyle([
                 ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1a73e8')),
                 ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
                 ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
                 ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-                ('FONTSIZE', (0, 0), (-1, -1), 9),
+                ('FONTSIZE', (0, 0), (-1, -1), 8),
                 ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
                 ('TOPPADDING', (0, 0), (-1, -1), 6),
                 ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
