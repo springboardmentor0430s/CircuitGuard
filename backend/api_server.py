@@ -8,6 +8,8 @@ import json
 from datetime import datetime
 import tempfile
 import sys
+import gc
+
 
 # Add backend directory to path
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'backend'))
@@ -15,10 +17,41 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'backend'))
 from main import CircuitGuardPipeline
 
 app = Flask(__name__)
-CORS(app, origins=["https://circuit-guard.vercel.app"])
+# limit request size to 10 MB
+app.config['MAX_CONTENT_LENGTH'] = 10 * 1024 * 1024
 
-# Initialize the pipeline
-pipeline = CircuitGuardPipeline()
+# allow origins from env or default
+allowed_origins = os.environ.get('FRONTEND_ORIGINS', 'https://circuit-guard.vercel.app')
+CORS(app, origins=[o.strip() for o in allowed_origins.split(',') if o.strip()])
+
+# lazy pipeline (do not load model at import)
+_pipeline = None
+def get_pipeline():
+    global _pipeline
+    if _pipeline is None:
+        _pipeline = CircuitGuardPipeline()  # heavy init deferred
+    return _pipeline
+
+# max image dimension (pixels) to downscale uploads
+MAX_IMAGE_DIM = int(os.environ.get('MAX_IMAGE_DIM', 1024))
+
+def save_and_resize(file_storage, max_dim=MAX_IMAGE_DIM, jpeg_quality=85):
+    """Read uploaded file, downscale if large, save to temp file, return path"""
+    # read bytes and decode to image
+    data = file_storage.read()
+    arr = np.frombuffer(data, np.uint8)
+    img = cv2.imdecode(arr, cv2.IMREAD_COLOR)
+    if img is None:
+        raise ValueError("Uploaded file is not a valid image")
+    h, w = img.shape[:2]
+    scale = max(h, w) / float(max_dim)
+    if scale > 1.0:
+        new_w = int(w / scale)
+        new_h = int(h / scale)
+        img = cv2.resize(img, (new_w, new_h), interpolation=cv2.INTER_AREA)
+    tmp = tempfile.NamedTemporaryFile(delete=False, suffix='.jpg')
+    cv2.imwrite(tmp.name, img, [int(cv2.IMWRITE_JPEG_QUALITY), jpeg_quality])
+    return tmp.name
 
 @app.route('/api/health', methods=['GET'])
 def health_check():
@@ -33,33 +66,38 @@ def health_check():
 def process_images():
     """Process template and test images for defect detection"""
     try:
-        # Check if files are present
+        # Check files
         if 'template' not in request.files or 'test' not in request.files:
             return jsonify({'error': 'Both template and test images are required'}), 400
-        
+
         template_file = request.files['template']
         test_file = request.files['test']
-        
+
         if template_file.filename == '' or test_file.filename == '':
             return jsonify({'error': 'No files selected'}), 400
-        
-        # Create temporary files
-        with tempfile.NamedTemporaryFile(delete=False, suffix='.jpg') as temp_template:
-            template_file.save(temp_template.name)
-            template_path = temp_template.name
-        
-        with tempfile.NamedTemporaryFile(delete=False, suffix='.jpg') as temp_test:
-            test_file.save(temp_test.name)
-            test_path = temp_test.name
-        
+
+        # Save & downscale uploads to reduce memory use
+        template_path = None
+        test_path = None
         try:
-            # Process images
-            results = pipeline.process_image_pair(template_path, test_path)
-            
+            template_path = save_and_resize(template_file)
+            test_path = save_and_resize(test_file)
+
+            # instantiate pipeline lazily
+            pipeline = get_pipeline()
+
+            # run pipeline inside try to catch MemoryError
+            try:
+                results = pipeline.process_image_pair(template_path, test_path)
+            except MemoryError:
+                # free memory and return 503 so Render doesn't keep failing
+                gc.collect()
+                return jsonify({'error': 'Server out of memory, try smaller images or upgrade instance'}), 503
+
             if results is None:
                 return jsonify({'error': 'Failed to process images'}), 500
-            
-            # Prepare response data
+
+            # Prepare response (same as before) ...
             response_data = {
                 'success': True,
                 'defect_count': results['defect_count'],
@@ -72,8 +110,7 @@ def process_images():
                     'result': encode_image_to_base64(results['result'])
                 }
             }
-            
-            # Process defects data
+
             for i, classification in enumerate(results['classifications']):
                 if i < len(results['bounding_boxes']):
                     x, y, w, h = results['bounding_boxes'][i]
@@ -95,36 +132,41 @@ def process_images():
                         }
                     }
                     response_data['defects'].append(defect_data)
-            
-            # Add frequency analysis
+
             response_data['frequency_analysis'] = get_frequency_analysis(response_data['defects'])
-            
-            # Add confidence statistics
             response_data['confidence_stats'] = get_confidence_stats(response_data['defects'])
-            
+
             return jsonify(response_data)
-            
+
         finally:
-            # Clean up temporary files
-            if os.path.exists(template_path):
-                os.unlink(template_path)
-            if os.path.exists(test_path):
-                os.unlink(test_path)
-                
+            # cleanup temp files ASAP and free memory
+            try:
+                if template_path and os.path.exists(template_path):
+                    os.unlink(template_path)
+                if test_path and os.path.exists(test_path):
+                    os.unlink(test_path)
+            except Exception:
+                pass
+            gc.collect()
+
     except Exception as e:
+        # if MemoryError bubbled here
+        if isinstance(e, MemoryError):
+            gc.collect()
+            return jsonify({'error': 'Server out of memory, try smaller images or upgrade instance'}), 503
         return jsonify({'error': f'Processing failed: {str(e)}'}), 500
 
 def encode_image_to_base64(image):
     """Convert OpenCV image to base64 string"""
     if image is None:
         return None
-    
+
     # Convert BGR to RGB for web display
     if len(image.shape) == 3:
         image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     else:
         image_rgb = image
-    
+
     # Encode to JPEG
     _, buffer = cv2.imencode('.jpg', image_rgb)
     image_base64 = base64.b64encode(buffer).decode('utf-8')
