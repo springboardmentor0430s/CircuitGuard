@@ -129,6 +129,8 @@ def process_images():
 def process_images_pdf():
     """Process images and return PDF report"""
     try:
+        start_time = datetime.now()
+        
         # Check if files are present
         if 'template' not in request.files or 'test' not in request.files:
             return jsonify({'error': 'Both template and test images are required'}), 400
@@ -171,13 +173,18 @@ def process_images_pdf():
                     }
                     defects.append(defect_data)
             
+            # Calculate processing time
+            end_time = datetime.now()
+            processing_time = (end_time - start_time).total_seconds()
+            
             # Generate PDF
             pdf_buffer = generate_pdf_report(
                 results=results,
                 defects=defects,
                 defect_count=results['defect_count'],
                 frequency_analysis=get_frequency_analysis(defects),
-                confidence_stats=get_confidence_stats(defects)
+                confidence_stats=get_confidence_stats(defects),
+                processing_time=processing_time
             )
             
             # Generate filename with timestamp
@@ -400,7 +407,7 @@ def create_defect_type_pie_chart(frequency_analysis, width=400, height=250):
     
     return drawing
 
-def generate_pdf_report(results, defects, defect_count, frequency_analysis, confidence_stats):
+def generate_pdf_report(results, defects, defect_count, frequency_analysis, confidence_stats, processing_time):
     """Generate PDF report with images and analysis"""
     buffer = BytesIO()
     doc = SimpleDocTemplate(buffer, pagesize=A4, topMargin=0.5*inch, bottomMargin=0.5*inch)
@@ -435,6 +442,7 @@ def generate_pdf_report(results, defects, defect_count, frequency_analysis, conf
     quality_status = 'PASS - No Defects' if defect_count == 0 else f'FAIL - {defect_count} Defects Found'
     summary_data = [
         ['Report Generated:', datetime.now().strftime('%Y-%m-%d %H:%M:%S')],
+        ['Processing Time:', f'{processing_time:.2f} seconds'],
         ['Total Defects Found:', str(defect_count)],
         ['Quality Status:', quality_status]
     ]
@@ -484,6 +492,7 @@ def generate_pdf_report(results, defects, defect_count, frequency_analysis, conf
             story.append(Spacer(1, 0.3*inch))
             
             # Confidence Distribution
+            story.append(PageBreak())
             story.append(Paragraph("<b>Confidence Level Distribution</b>", styles['Normal']))
             story.append(Spacer(1, 0.1*inch))
             conf_chart = create_confidence_distribution_chart(confidence_stats)
@@ -496,6 +505,17 @@ def generate_pdf_report(results, defects, defect_count, frequency_analysis, conf
             size_chart = create_defect_size_distribution_chart(defects)
             story.append(size_chart)
             story.append(Spacer(1, 0.3*inch))
+
+            # Defect Heatmap
+            story.append(PageBreak())
+            story.append(Paragraph("<b>Defect Location Heatmap</b>", styles['Normal']))
+            story.append(Spacer(1, 0.1*inch))
+            heatmap = build_defect_heatmap(results['test'].shape, defects)
+            if heatmap is not None:
+                heatmap_path = save_cv2_image_temp(heatmap)
+                temp_images.append(heatmap_path)
+                story.append(Image(heatmap_path, width=5*inch, height=4*inch))
+                story.append(Spacer(1, 0.3*inch))
         
         # Frequency Analysis Table
         if frequency_analysis and defect_count > 0:
@@ -602,6 +622,7 @@ def generate_pdf_report(results, defects, defect_count, frequency_analysis, conf
         story.append(Spacer(1, 0.3*inch))
         
         # Defect Mask
+        story.append(PageBreak())
         story.append(Paragraph("<b>Defect Detection Mask</b>", styles['Normal']))
         story.append(Spacer(1, 0.1*inch))
         mask_img_path = save_cv2_image_temp(results['defect_mask'])
@@ -619,6 +640,25 @@ def generate_pdf_report(results, defects, defect_count, frequency_analysis, conf
         for img_path in temp_images:
             if os.path.exists(img_path):
                 os.unlink(img_path)
+
+def build_defect_heatmap(base_shape, defects_list):
+    """Generate a heatmap visualization of defect locations"""
+    h, w = base_shape[:2]
+    if h <= 0 or w <= 0:
+        return None
+    heat = np.zeros((h, w), dtype=np.float32)
+    for d in defects_list:
+        cx = int(d.get('center', {}).get('x', d.get('bbox', {}).get('x', 0)))
+        cy = int(d.get('center', {}).get('y', d.get('bbox', {}).get('y', 0)))
+        cv2.circle(heat, (max(0, min(w-1, cx)), max(0, min(h-1, cy))), 20, 1.0, -1)
+    if np.max(heat) > 0:
+        heat = cv2.GaussianBlur(heat, (0, 0), 15)
+        heat = (255 * (heat / np.max(heat))).astype(np.uint8)
+    heat_color = cv2.applyColorMap(heat, cv2.COLORMAP_JET)
+    # Light background for nicer look
+    bg = np.full_like(heat_color, 245)
+    overlay = cv2.addWeighted(bg, 0.65, heat_color, 0.35, 0)
+    return overlay
 
 def save_cv2_image_temp(cv2_image):
     """Save OpenCV image to temporary file"""
