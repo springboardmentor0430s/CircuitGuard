@@ -145,45 +145,109 @@ function App() {
     }
   };
 
-  const downloadLogsCSV = () => {
-    if (!results?.defects) {
-      setError('No defect logs available');
-      return;
-    }
+const downloadLogsCSV = () => {
+  if (!results?.defects) {
+    setError('No defect logs available');
+    return;
+  }
 
-    try {
-      let csv = 'id,class_name,x,y,width,height,area,confidence\n';
-      results.defects.forEach(d => {
-        const conf = (d.confidence !== undefined && d.confidence !== null) ? d.confidence : '';
-        const row = [
-          d.id,
-          `"${d.class_name}"`,
-          d.bbox.x,
-          d.bbox.y,
-          d.bbox.width,
-          d.bbox.height,
-          d.area,
-          conf
-        ].join(',');
-        csv += row + '\n';
+  try {
+    // Header with metadata
+    let csv = '# CircuitGuard PCB Defect Detection Report\n';
+    csv += `# Report Generated: ${new Date().toISOString()}\n`;
+    csv += `# Total Defects: ${results.defect_count}\n`;
+    csv += `# Quality Status: ${results.defect_count === 0 ? 'PASS' : 'FAIL'}\n`;
+    
+    if (results.confidence_stats) {
+      csv += `# Average Confidence: ${(results.confidence_stats.average * 100).toFixed(1)}%\n`;
+      csv += `# Min Confidence: ${(results.confidence_stats.min * 100).toFixed(1)}%\n`;
+      csv += `# Max Confidence: ${(results.confidence_stats.max * 100).toFixed(1)}%\n`;
+      csv += `# High Confidence Count (≥80%): ${results.confidence_stats.high_confidence_count}\n`;
+      csv += `# Medium Confidence Count (50-80%): ${results.confidence_stats.medium_confidence_count}\n`;
+      csv += `# Low Confidence Count (<50%): ${results.confidence_stats.low_confidence_count}\n`;
+    }
+    
+    csv += '#\n';
+    csv += '# Defect Type Distribution\n';
+    if (results.frequency_analysis) {
+      Object.entries(results.frequency_analysis).forEach(([type, data]) => {
+        csv += `# ${type.replace(/_/g, ' ').toUpperCase()}: ${data.count} (${data.percentage}%)\n`;
       });
-
-      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-      link.download = `circuitguard_logs_${timestamp}.csv`;
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
-    } catch (err) {
-      setError('Failed to generate/download logs');
-    } finally {
-      setDownloadMenuOpen(false);
     }
-  };
+    
+    csv += '#\n';
+    csv += '# Size Distribution\n';
+    if (results.size_distribution) {
+      Object.entries(results.size_distribution).forEach(([key, data]) => {
+        csv += `# ${data.label}: ${data.count} (${data.percentage}%)\n`;
+      });
+    }
+    
+    csv += '#\n';
+    csv += '# Detailed Defect List\n';
+    
+    // Main data table header
+    csv += 'ID,Defect Type,Confidence (%),Center X,Center Y,BBox X,BBox Y,Width,Height,Area (px²),Severity\n';
+    
+    // Severity mapping
+    const severityMap = {
+      'open_circuit': 'Critical',
+      'short': 'Critical',
+      'missing_hole': 'High',
+      'mouse_bite': 'Medium',
+      'spur': 'Medium',
+      'spurious_copper': 'Low'
+    };
+    
+    results.defects.forEach(d => {
+      const conf = (d.confidence !== undefined && d.confidence !== null) 
+        ? (d.confidence * 100).toFixed(1) 
+        : 'N/A';
+      const severity = severityMap[d.class_name] || 'Unknown';
+      const centerX = d.center?.x || Math.round(d.bbox.x + d.bbox.width / 2);
+      const centerY = d.center?.y || Math.round(d.bbox.y + d.bbox.height / 2);
+      
+      const row = [
+        d.id,
+        `"${d.class_name.replace(/_/g, ' ').toUpperCase()}"`,
+        conf,
+        centerX,
+        centerY,
+        d.bbox.x,
+        d.bbox.y,
+        d.bbox.width,
+        d.bbox.height,
+        d.area,
+        severity
+      ].join(',');
+      csv += row + '\n';
+    });
+    
+    // Add summary statistics at the end
+    csv += '\n# Summary Statistics\n';
+    csv += `# Total Records: ${results.defects.length}\n`;
+    csv += `# Defect Types Found: ${Object.keys(results.frequency_analysis || {}).length}\n`;
+    csv += `# Inspection Date: ${new Date().toLocaleDateString()}\n`;
+    csv += `# Inspection Time: ${new Date().toLocaleTimeString()}\n`;
+    
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    link.download = `CircuitGuard_Detailed_Log_${timestamp}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
+  } catch (err) {
+    setError('Failed to generate/download logs');
+    console.error(err);
+  } finally {
+    setDownloadMenuOpen(false);
+  }
+};
 
   const resetForm = () => {
     setTemplateFile(null);
