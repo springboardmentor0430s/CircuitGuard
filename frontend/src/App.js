@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import axios from 'axios';
 import { Upload, Image as ImageIcon, CheckCircle, AlertCircle, FileText, BarChart3, PieChart as PieChartIcon, TrendingUp } from 'lucide-react';
 import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
@@ -106,6 +106,82 @@ function App() {
       setError(err.response?.data?.error || 'Failed to generate PDF report');
     } finally {
       setIsDownloadingPDF(false);
+    }
+  };
+
+  // Dropdown state for download options
+  const [downloadMenuOpen, setDownloadMenuOpen] = useState(false);
+  const downloadMenuRef = useRef(null);
+
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (downloadMenuRef.current && !downloadMenuRef.current.contains(e.target)) {
+        setDownloadMenuOpen(false);
+      }
+    }
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, []);
+
+  const downloadAnnotatedImage = () => {
+    if (!results?.images?.result) {
+      setError('No annotated image available');
+      return;
+    }
+
+    try {
+      const dataUrl = results.images.result; 
+      const link = document.createElement('a');
+      link.href = dataUrl;
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+      link.download = `annotated_result_${timestamp}.jpg`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (err) {
+      setError('Failed to download annotated image');
+    } finally {
+      setDownloadMenuOpen(false);
+    }
+  };
+
+  const downloadLogsCSV = () => {
+    if (!results?.defects) {
+      setError('No defect logs available');
+      return;
+    }
+
+    try {
+      let csv = 'id,class_name,x,y,width,height,area,confidence\n';
+      results.defects.forEach(d => {
+        const conf = (d.confidence !== undefined && d.confidence !== null) ? d.confidence : '';
+        const row = [
+          d.id,
+          `"${d.class_name}"`,
+          d.bbox.x,
+          d.bbox.y,
+          d.bbox.width,
+          d.bbox.height,
+          d.area,
+          conf
+        ].join(',');
+        csv += row + '\n';
+      });
+
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+      link.download = `circuitguard_logs_${timestamp}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      setError('Failed to generate/download logs');
+    } finally {
+      setDownloadMenuOpen(false);
     }
   };
 
@@ -229,17 +305,134 @@ function App() {
           <div className="results-section">
             <div className="results-header">
               <h2>Detection Results</h2>
-              <div className='result-buttons'>
-                <button 
-                  className="pdf-button" 
-                  onClick={downloadPDFReport}
+              <div className='result-buttons' style={{ position: 'relative' }} ref={downloadMenuRef}>
+                <button
+                  className="pdf-button"
+                  onClick={() => setDownloadMenuOpen((s) => !s)}
                   disabled={isProcessing || isDownloadingPDF}
+                  aria-haspopup="true"
+                  aria-expanded={downloadMenuOpen}
                 >
                   <FileText />
-                  {isDownloadingPDF ? 'Generating PDF...' : 'Download Report'}
+                  {isDownloadingPDF ? 'Generating PDF...' : 'Download'}
+                  <span style={{ marginLeft: 8, fontSize: 12 }}>{downloadMenuOpen ? '▲' : '▼'}</span>
                 </button>
+
+                {downloadMenuOpen && (
+  <div
+    style={{
+      position: 'absolute',
+      right: 0,
+      top: 'calc(100% + 8px)',
+      background: 'white',
+      borderRadius: 12,
+      boxShadow: '0 10px 30px rgba(0,0,0,0.15)',
+      zIndex: 50,
+      minWidth: 240,
+      overflow: 'hidden',
+      border: '1px solid #e5e7eb'
+    }}
+  >
+    <button
+      onClick={downloadPDFReport}
+      disabled={isProcessing || isDownloadingPDF}
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 12,
+        width: '100%',
+        padding: '12px 16px',
+        border: 'none',
+        background: 'white',
+        color: '#374151',
+        textAlign: 'left',
+        fontWeight: 600,
+        fontSize: '0.9rem',
+        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif',
+        cursor: 'pointer',
+        transition: 'all 0.2s ease',
+        borderBottom: '1px solid #f3f4f6'
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.background = '#f9fafb';
+        e.currentTarget.style.color = '#667eea';
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.background = 'white';
+        e.currentTarget.style.color = '#374151';
+      }}
+    >
+      <FileText size={18} />
+      Report (PDF)
+    </button>
+
+    <button
+      onClick={downloadAnnotatedImage}
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 12,
+        width: '100%',
+        padding: '12px 16px',
+        border: 'none',
+        background: 'white',
+        color: '#374151',
+        textAlign: 'left',
+        fontWeight: 600,
+        fontSize: '0.9rem',
+        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif',
+        cursor: 'pointer',
+        transition: 'all 0.2s ease',
+        borderBottom: '1px solid #f3f4f6'
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.background = '#f9fafb';
+        e.currentTarget.style.color = '#667eea';
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.background = 'white';
+        e.currentTarget.style.color = '#374151';
+      }}
+    >
+      <ImageIcon size={18} />
+      Annotated Image
+    </button>
+
+    <button
+      onClick={downloadLogsCSV}
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 12,
+        width: '100%',
+        padding: '12px 16px',
+        border: 'none',
+        background: 'white',
+        color: '#374151',
+        textAlign: 'left',
+        fontWeight: 600,
+        fontSize: '0.9rem',
+        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif',
+        cursor: 'pointer',
+        transition: 'all 0.2s ease'
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.background = '#f9fafb';
+        e.currentTarget.style.color = '#667eea';
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.background = 'white';
+        e.currentTarget.style.color = '#374151';
+      }}
+    >
+      <TrendingUp size={18} />
+      Logs (CSV)
+    </button>
+  </div>
+)}
+
                 <button className="reset-button" onClick={resetForm}>
-                  Process New Images
+                  ⟳
                 </button>
               </div>
             </div>
