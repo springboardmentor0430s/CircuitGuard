@@ -10,7 +10,6 @@ from PIL import Image
 import time
 import io
 from datetime import datetime
-
 # Import backend pipeline
 from backend_pipeline import InferencePipeline, BackendConfig
 
