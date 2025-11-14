@@ -1,0 +1,10 @@
+numpy
+opencv-python
+Pillow
+torch
+torchvision
+timm
+streamlit
+matplotlib
+reportlab
+python-multipart

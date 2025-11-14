@@ -11,7 +11,7 @@ import os
 BASE_DIR = r"C:\CircuitGuardd_Infosyss"
 
 # Input
-DATASET_DIR = os.path.join(BASE_DIR, "DeepPCB", "PCBData")
+DATASET_DIR = os.path.join(BASE_DIR, "PCBData")
 
 # Output - Milestone 1
 OUTPUT_DIR = os.path.join(BASE_DIR, "milestone1_output")
