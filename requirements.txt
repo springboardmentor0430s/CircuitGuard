@@ -1,0 +1,13 @@
+streamlit
+torch
+torchvision
+pillow
+opencv-python
+scikit-learn
+tqdm
+matplotlib
+seaborn
+flask
+werkzeug
+numpy
+reportlab
