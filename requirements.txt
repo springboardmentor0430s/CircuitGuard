@@ -1,0 +1,13 @@
+streamlit
+opencv-python
+numpy
+pandas
+torch
+torchvision
+matplotlib
+seaborn
+scikit-learn
+Pillow
+reportlab
+tempfile
+datetime
