@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>CircuitGuard: THE PCB INSPECTOR</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      font-family: 'Poppins', sans-serif;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .container {
+      max-width: 850px;
+      background: white;
+      padding: 50px;
+      border-radius: 20px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+      margin-top: 50px;
+    }
+    h1 {
+      text-align: center;
+      font-weight: 700;
+      margin-bottom: 15px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-size: 2.5rem;
+    }
+    .text-muted {
+      text-align: center;
+      margin-bottom: 40px;
+      font-size: 1rem;
+      color: #666 !important;
+    }
+    label {
+      font-weight: 600;
+      margin-top: 15px;
+      color: #333;
+      font-size: 15px;
+      margin-bottom: 8px;
+    }
+    .form-control {
+      border: 2px solid #e0e0e0;
+      border-radius: 10px;
+      padding: 12px;
+      transition: all 0.3s;
+    }
+    .form-control:focus {
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      outline: none;
+    }
+    .form-control[type="file"] {
+      padding: 15px;
+      cursor: pointer;
+      background: #f8f9fa;
+    }
+    .form-control[type="file"]:hover {
+      background: #e9ecef;
+      border-color: #667eea;
+    }
+    .row {
+      margin-top: 20px;
+    }
+    button {
+      margin-top: 35px;
+      width: 100%;
+      padding: 15px;
+      font-size: 1.1rem;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border: none;
+      font-weight: 600;
+      transition: all 0.3s;
+      box-shadow: 0 5px 20px rgba(102, 126, 234, 0.3);
+    }
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+    }
+    button:active {
+      transform: translateY(0);
+    }
+    .mb-3 {
+      margin-bottom: 25px !important;
+    }
+    .header-icon {
+      text-align: center;
+      font-size: 50px;
+      margin-bottom: 20px;
+    }
+    .info-box {
+      background: #f0f4ff;
+      padding: 15px;
+      border-radius: 10px;
+      border-left: 4px solid #667eea;
+      margin-bottom: 30px;
+    }
+    .info-box p {
+      margin: 0;
+      color: #1976d2;
+      font-size: 14px;
+    }
+    @media (max-width: 768px) {
+      .container {
+        padding: 30px 20px;
+      }
+      h1 {
+        font-size: 2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header-icon">🔍</div>
+    <h1>CircuitGuard: THE PCB INSPECTOR</h1>
+    <p class="text-muted">Upload your <strong>Template</strong> and <strong>Test</strong> PCB images to detect and classify defects.</p>
+    
+    <div class="info-box">
+      <p><strong>💡 Tip:</strong> Use a clean reference PCB as the template and the PCB to inspect as the test image for best results.</p>
+    </div>
+
+    <form action="/process" method="POST" enctype="multipart/form-data">
+      <div class="mb-3">
+        <label class="form-label">📋 Upload Template (Golden) Image:</label>
+        <input type="file" name="template" class="form-control" required>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">🔬 Upload Test (Defective) Image:</label>
+        <input type="file" name="test" class="form-control" required>
+      </div>
+
+      <div class="row">
+        <div class="col-md-4">
+          <label>Difference Threshold</label>
+          <input type="number" name="threshold" class="form-control" value="10" min="1" max="80">
+        </div>
+        <div class="col-md-4">
+          <label>Min ROI Area</label>
+          <input type="number" name="min_area" class="form-control" value="100" min="50" max="2000">
+        </div>
+        <div class="col-md-4">
+          <label>Confidence Filter (%)</label>
+          <input type="number" name="confidence_filter" class="form-control" value="0" min="0" max="100">
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary">🚀 Run Inference</button>
+    </form>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
