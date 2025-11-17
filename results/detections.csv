@@ -1,0 +1,30 @@
+crop_name,x,y,w,h,pred_label,confidence
+flask_crop_0.jpg,94,623,23,17,Spurious Copper,24.45
+flask_crop_1.jpg,56,623,37,17,Spur,31.20
+flask_crop_2.jpg,56,557,3,52,Spur,46.85
+flask_crop_3.jpg,126,499,35,29,Open Circuit,20.91
+flask_crop_4.jpg,415,495,26,33,Open Circuit,22.47
+flask_crop_5.jpg,162,482,39,46,Spur,32.78
+flask_crop_6.jpg,151,471,33,34,Spur,57.42
+flask_crop_7.jpg,471,442,122,198,Mouse Bite,43.98
+flask_crop_8.jpg,255,439,18,34,Spurious Copper,21.83
+flask_crop_9.jpg,170,402,39,79,Spur,31.98
+flask_crop_10.jpg,440,394,33,46,Spur,35.05
+flask_crop_11.jpg,0,375,33,42,Spur,44.51
+flask_crop_12.jpg,351,360,51,57,Spur,38.51
+flask_crop_13.jpg,23,343,50,162,Spur,31.52
+flask_crop_14.jpg,387,327,54,57,Mouse Bite,27.57
+flask_crop_15.jpg,319,327,114,313,Mouse Bite,40.98
+flask_crop_16.jpg,295,223,121,58,Spur,23.23
+flask_crop_17.jpg,424,192,17,24,Spur,23.90
+flask_crop_18.jpg,356,158,46,44,Spur,51.36
+flask_crop_19.jpg,151,144,34,32,Spur,49.92
+flask_crop_20.jpg,120,128,238,369,Spurious Copper,27.66
+flask_crop_21.jpg,400,127,41,64,Spur,26.63
+flask_crop_22.jpg,215,64,42,49,Spur,33.09
+flask_crop_23.jpg,199,63,34,34,Spur,54.57
+flask_crop_24.jpg,72,56,25,17,Spurious Copper,17.65
+flask_crop_25.jpg,343,0,90,33,Spur,36.21
+flask_crop_26.jpg,327,0,26,17,Spur,25.55
+flask_crop_27.jpg,215,0,41,63,Spur,38.78
+flask_crop_28.jpg,71,0,142,241,Spur,19.31
