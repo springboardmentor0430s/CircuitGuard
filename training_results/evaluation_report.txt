@@ -1,0 +1,51 @@
+============================================================
+PCB DEFECT CLASSIFICATION - EVALUATION REPORT
+============================================================
+
+OVERALL PERFORMANCE:
+------------------------------------------------------------
+Accuracy:  99.87%
+Precision: 0.9987
+Recall:    0.9987
+F1-Score:  0.9987
+
+PER-CLASS PERFORMANCE:
+------------------------------------------------------------
+
+mousebite:
+  Precision: 1.0000
+  Recall:    0.9933
+  F1-Score:  0.9966
+  Support:   297
+
+open:
+  Precision: 1.0000
+  Recall:    1.0000
+  F1-Score:  1.0000
+  Support:   219
+
+short:
+  Precision: 0.9933
+  Recall:    1.0000
+  F1-Score:  0.9966
+  Support:   295
+
+spur:
+  Precision: 1.0000
+  Recall:    1.0000
+  F1-Score:  1.0000
+  Support:   232
+
+copper:
+  Precision: 1.0000
+  Recall:    1.0000
+  F1-Score:  1.0000
+  Support:   230
+
+pin-hole:
+  Precision: 1.0000
+  Recall:    1.0000
+  F1-Score:  1.0000
+  Support:   227
+
+============================================================

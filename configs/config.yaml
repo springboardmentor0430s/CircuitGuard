@@ -1,0 +1,116 @@
+# Dataset paths
+data:
+  raw_pcb_path: "data/raw/PCBData"
+  splits_path: "data/raw/splits"
+  processed_path: "data/processed"
+  metadata_path: "data/metadata"
+  roi_dataset_path: "data/processed/roi_dataset"  # NEW
+  
+# Dataset organization
+dataset:
+  template_suffix: "_temp"
+  test_suffix: "_test"
+  label_folder_suffix: "_not"
+  image_ext: ".jpg"
+  
+# Preprocessing
+preprocessing:
+  target_size: [640, 640]
+  roi_size: [128, 128]
+  grayscale: true
+  
+# Alignment
+alignment:
+  method: "orb"
+  max_features: 5000
+  match_threshold: 0.75
+  
+# Subtraction
+subtraction:
+  method: "absolute"
+  blur_kernel: [5, 5]
+  
+# Thresholding
+thresholding:
+  method: "otsu"
+  
+# Morphology
+morphology:
+  erosion_kernel: [3, 3]
+  dilation_kernel: [5, 5]
+  erosion_iterations: 1
+  dilation_iterations: 2
+  
+# Contours
+contours:
+  min_area: 50
+  max_area: 50000
+  
+# Output
+output:
+  save_intermediate: true
+  visualization: true
+  log_level: "INFO"
+
+# NEW: Model Training Configuration
+model:
+  name: "efficientnet_b4"
+  num_classes: 6
+  pretrained: true
+  dropout: 0.3
+  
+training:
+  batch_size: 32
+  num_epochs: 50
+  learning_rate: 0.001
+  weight_decay: 0.0001
+  early_stopping_patience: 10
+  save_best_only: true
+  
+augmentation:
+  train:
+    horizontal_flip: 0.5
+    vertical_flip: 0.5
+    rotation_limit: 20
+    brightness_limit: 0.2
+    contrast_limit: 0.2
+    blur_limit: 3
+  val:
+    enabled: false
+  test:
+    enabled: false
+
+optimizer:
+  type: "adam"
+  betas: [0.9, 0.999]
+  
+scheduler:
+  type: "reduce_on_plateau"
+  mode: "min"
+  factor: 0.5
+  patience: 5
+  min_lr: 0.00001
+
+# Defect classes (1-indexed as per DeepPCB format)
+classes:
+  1: "mousebite"
+  2: "open"
+  3: "short"
+  4: "spur"
+  5: "copper"
+  6: "pin-hole"
+
+# For model training (0-indexed)
+class_names:
+  - "mousebite"
+  - "open"
+  - "short"
+  - "spur"
+  - "copper"
+  - "pin-hole"
+
+# Paths
+paths:
+  checkpoints: "models/checkpoints"
+  logs: "models/logs"
+  results: "outputs/training_results"

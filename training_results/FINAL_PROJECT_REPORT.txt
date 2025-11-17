@@ -1,0 +1,134 @@
+================================================================================
+CIRCUITGUARD-PCB: DEFECT DETECTION & CLASSIFICATION
+Final Project Report
+================================================================================
+
+PROJECT OVERVIEW:
+--------------------------------------------------------------------------------
+Objective: Automated PCB defect detection and classification using
+           image subtraction and deep learning (EfficientNet-B4)
+
+Approach:
+  1. Reference-based defect detection (image subtraction)
+  2. Morphological processing and contour extraction
+  3. Deep learning classification (EfficientNet-B4)
+
+DATASET STATISTICS:
+--------------------------------------------------------------------------------
+
+Defect Distribution Across Splits:
+           test  train  val
+class                      
+copper      230   1012  232
+mousebite   297   1351  294
+open        219   1052  235
+pin-hole    227   1036  238
+short       295   1382  288
+spur        232   1156  237
+
+Total defects: 10013
+
+MODEL ARCHITECTURE:
+--------------------------------------------------------------------------------
+Base Model: EfficientNet-B4
+Input Size: 128x128 (grayscale)
+Number of Classes: 6
+Classes: mousebite, open, short, spur, copper, pin-hole
+Dropout Rate: 0.3
+
+TRAINING CONFIGURATION:
+--------------------------------------------------------------------------------
+Optimizer: ADAM
+Learning Rate: 0.001
+Batch Size: 32
+Max Epochs: 50
+Early Stopping Patience: 10
+
+DATA AUGMENTATION:
+--------------------------------------------------------------------------------
+Horizontal Flip: 0.5
+Vertical Flip: 0.5
+Rotation: ±20°
+Brightness/Contrast: ±0.2
+Gaussian Blur: up to 3px
+
+TRAINING RESULTS:
+--------------------------------------------------------------------------------
+Total Epochs Trained: 36
+Best Validation Accuracy: 99.54% (Epoch 26)
+Final Training Accuracy: 99.94%
+Final Validation Accuracy: 99.54%
+Target Achievement (≥97%): ✓ YES
+
+TEST SET EVALUATION:
+--------------------------------------------------------------------------------
+Test Accuracy: 99.87%
+Test Precision: 0.9987
+Test Recall: 0.9987
+Test F1-Score: 0.9987
+
+Per-Class Performance:
+  mousebite:
+    Precision: 1.0000
+    Recall: 0.9933
+    F1-Score: 0.9966
+    Support: 297
+  open:
+    Precision: 1.0000
+    Recall: 1.0000
+    F1-Score: 1.0000
+    Support: 219
+  short:
+    Precision: 0.9933
+    Recall: 1.0000
+    F1-Score: 0.9966
+    Support: 295
+  spur:
+    Precision: 1.0000
+    Recall: 1.0000
+    F1-Score: 1.0000
+    Support: 232
+  copper:
+    Precision: 1.0000
+    Recall: 1.0000
+    F1-Score: 1.0000
+    Support: 230
+  pin-hole:
+    Precision: 1.0000
+    Recall: 1.0000
+    F1-Score: 1.0000
+    Support: 227
+
+DELIVERABLES:
+--------------------------------------------------------------------------------
+✓ Trained EfficientNet-B4 model (models/checkpoints/best_model.pth)
+✓ Training history and metrics (models/checkpoints/training_history.json)
+✓ Confusion matrix visualization
+✓ Classification report
+✓ Per-class accuracy plots
+✓ Prediction pipeline with annotations
+✓ TensorBoard logs (models/logs/)
+✓ Complete evaluation report
+
+MILESTONE COMPLETION STATUS:
+--------------------------------------------------------------------------------
+✓ Milestone 1: Dataset Preparation & Image Processing
+  - Dataset inspection and organization
+  - Image alignment (ORB feature matching)
+  - Image subtraction and difference maps
+  - Otsu thresholding
+  - Morphological operations
+  - Contour extraction and ROI detection
+
+✓ Milestone 2: Model Training & Evaluation
+  - EfficientNet-B4 implementation
+  - Data augmentation pipeline
+  - Model training with Adam optimizer
+  - Validation and early stopping
+  - Test set evaluation
+  - Confusion matrix and metrics
+  - Prediction pipeline implementation
+
+================================================================================
+END OF REPORT
+================================================================================
