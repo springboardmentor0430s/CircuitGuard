@@ -6,9 +6,8 @@ from torchvision import transforms
 from torchvision.models import efficientnet_b4, EfficientNet_B4_Weights
 import os
 
-# ==========================
-# CONFIGURATION
-# ==========================
+
+#CONFIGURATION
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 MODEL_PATH = "efficientnet_b4_best.pth"
@@ -26,9 +25,7 @@ MAX_ASPECT_RATIO = 7.0
 VISUALIZE = False
 
 
-# ==========================
-# LOAD MODEL
-# ==========================
+#LOAD MODEL
 def load_model(model_path):
     print("📦 Loading EfficientNet-B4 (torchvision) model...")
 
@@ -43,9 +40,8 @@ def load_model(model_path):
     return model
 
 
-# ==========================
-# IMAGE PREPROCESSING
-# ==========================
+
+#IMAGE PREPROCESSING
 def preprocess_image(img):
     transform = transforms.Compose([
         transforms.ToPILImage(),
@@ -57,9 +53,8 @@ def preprocess_image(img):
     return transform(img).unsqueeze(0)
 
 
-# ==========================
-# BOUNDING BOX ADJUSTER
-# ==========================
+
+#BOUNDING BOX ADJUSTER
 def adjust_bbox(x, y, w, h, img_w, img_h, pad=BOX_PADDING, x_offset=DETECTED_BOX_X_OFFSET):
     x_start = max(0, x - pad - x_offset)
     y_start = max(0, y - pad)
@@ -70,9 +65,7 @@ def adjust_bbox(x, y, w, h, img_w, img_h, pad=BOX_PADDING, x_offset=DETECTED_BOX
     return x_start, y_start, x_end, y_end
 
 
-# ==========================
-# DETECT + CLASSIFY + COMBINE
-# ==========================
+#DETECT + CLASSIFY + COMBINE
 def detect_and_classify(model, ref_path, test_path, output_path):
     print("🚀 Starting full defect detection + classification pipeline...")
 
@@ -83,18 +76,18 @@ def detect_and_classify(model, ref_path, test_path, output_path):
 
     H, W, _ = test.shape
 
-    # --- Step 1: Image Subtraction ---
+    #Step 1: Image Subtraction
     diff = cv2.absdiff(ref, test)
     gray = cv2.cvtColor(diff, cv2.COLOR_BGR2GRAY)
     blurred = cv2.GaussianBlur(gray, (3, 3), 0)
     _, thresh = cv2.threshold(blurred, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
 
-    # --- Step 2: Morphological filtering ---
+    #Step 2: Morphological filtering
     kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
     cleaned = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, kernel, iterations=1)
     cleaned = cv2.morphologyEx(cleaned, cv2.MORPH_CLOSE, kernel, iterations=1)
 
-    # --- Step 3: Find contours ---
+    #Step 3: Find contours
     contours, _ = cv2.findContours(cleaned, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     print(f"🔍 Found {len(contours)} potential defect regions.")
 
@@ -131,22 +124,20 @@ def detect_and_classify(model, ref_path, test_path, output_path):
                     cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2)
         roi_counter += 1
 
-        # Add heat intensity proportional to confidence
+        #Add heat intensity proportional to confidence
         heatmap_mask[y1:y2, x1:x2] += conf / 100.0
 
-    # --- Normalize heatmap ---
+    #Normalize heatmap
     heatmap_mask = np.clip(heatmap_mask, 0, 1)
     heatmap = cv2.applyColorMap((heatmap_mask * 255).astype(np.uint8), cv2.COLORMAP_JET)
     heatmap_overlay = cv2.addWeighted(annotated, 0.7, heatmap, 0.6, 0)
 
-    # --- Step 4: Save annotated ---
+    #Step 4: Save annotated
     cv2.imwrite(output_path, annotated)
     print(f"✅ Annotated image saved to {output_path}")
     print(f"📊 Total classified ROIs: {roi_counter}")
 
-    # --- Step 5: Combine all 5 images ---
-        # --- Step 5: Combine all 5 images ---
-        # --- Step 5: Combine all 5 images with borders & labels ---
+    #Step 5: Combine all 5 images
     def resize_for_display(img):
         return cv2.resize(img, (400, 400))
 
@@ -159,27 +150,27 @@ def detect_and_classify(model, ref_path, test_path, output_path):
         text_size, _ = cv2.getTextSize(text, font, font_scale, thickness)
         text_w, text_h = text_size
 
-        # Yellow background rectangle behind text
+        #Yellow background rectangle behind text
         cv2.rectangle(label_img, (5, 5),
                       (10 + text_w, 10 + text_h + 5),
                       (0, 255, 255), -1)
-        # Black text
+        #Black text
         cv2.putText(label_img, text, (10, 10 + text_h),
                     font, font_scale, (0, 0, 0), thickness, cv2.LINE_AA)
         return label_img
 
-    # Resize and label each image
+    #Resize and label each image
     temp_disp = add_label(resize_for_display(ref), "Temp Image")
     test_disp = add_label(resize_for_display(test), "Test Image")
     clean_disp = add_label(cv2.cvtColor(resize_for_display(cleaned), cv2.COLOR_GRAY2BGR), "Threshold Image")
     annotated_disp = add_label(resize_for_display(annotated), "Annotated Image")
     heatmap_disp = add_label(resize_for_display(heatmap_overlay), "Defect Heatmap")
 
-    # Define border size and color
+    #Define border size and color
     BORDER_SIZE = 10
     BORDER_COLOR = (50, 50, 50)
 
-    # Add border around each image
+    #Add border around each image
     def add_border(img):
         return cv2.copyMakeBorder(img, BORDER_SIZE, BORDER_SIZE, BORDER_SIZE, BORDER_SIZE,
                                   cv2.BORDER_CONSTANT, value=BORDER_COLOR)
@@ -190,11 +181,11 @@ def detect_and_classify(model, ref_path, test_path, output_path):
     annotated_disp = add_border(annotated_disp)
     heatmap_disp = add_border(heatmap_disp)
 
-    # Combine rows
+    #Combine rows
     top_row = np.hstack((temp_disp, test_disp, clean_disp))
     bottom_row = np.hstack((annotated_disp, heatmap_disp))
 
-    # Ensure both rows have the same width
+    #Ensure both rows have the same width
     top_h, top_w, _ = top_row.shape
     bottom_h, bottom_w, _ = bottom_row.shape
 
@@ -205,10 +196,10 @@ def detect_and_classify(model, ref_path, test_path, output_path):
         else:
             top_row = cv2.copyMakeBorder(top_row, 0, 0, 0, pad_width, cv2.BORDER_CONSTANT, value=BORDER_COLOR)
 
-    # Stack vertically
+    #Stack vertically
     combined = np.vstack((top_row, bottom_row))
 
-    # Add outer border to final image
+    #Add outer border to final image
     combined = cv2.copyMakeBorder(combined, BORDER_SIZE, BORDER_SIZE, BORDER_SIZE, BORDER_SIZE,
                                   cv2.BORDER_CONSTANT, value=BORDER_COLOR)
 
@@ -216,11 +207,7 @@ def detect_and_classify(model, ref_path, test_path, output_path):
     print(f"🖼️ Combined output with labels and borders saved as {COMBINED_OUTPUT}")
 
 
-
-
-# ==========================
-# MAIN
-# ==========================
+#MAIN
 if __name__ == "__main__":
     model = load_model(MODEL_PATH)
     detect_and_classify(model, REFERENCE_IMAGE, TEST_IMAGE, OUTPUT_IMAGE)

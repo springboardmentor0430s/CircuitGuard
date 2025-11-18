@@ -5,14 +5,15 @@ import torch.optim as optim
 from torchvision import datasets, models, transforms
 from torch.utils.data import DataLoader
 from sklearn.metrics import confusion_matrix, classification_report
+from sklearn.metrics import precision_recall_fscore_support, accuracy_score
 import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 
-# =========================================================
-# CONFIGURATION
-# =========================================================
+
+#CONFIGURATION
+
 DATA_ROOT = 'Final_PCB_Split'  # Folder containing train/validation/test
 TRAIN_DIR = os.path.join(DATA_ROOT, 'train')
 VAL_DIR = os.path.join(DATA_ROOT, 'validation')
@@ -26,9 +27,8 @@ EPOCHS = 30
 LEARNING_RATE = 1e-4
 DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 
-# =========================================================
-# DATA TRANSFORMS
-# =========================================================
+
+#DATA TRANSFORMS
 data_transforms = {
     'train': transforms.Compose([
         transforms.Resize((IMAGE_SIZE, IMAGE_SIZE)),
@@ -53,9 +53,8 @@ data_transforms = {
     ])
 }
 
-# =========================================================
-# DATA LOADERS
-# =========================================================
+
+#DATA LOADERS
 def create_dataloaders():
     image_datasets = {
         'train': datasets.ImageFolder(TRAIN_DIR, transform=data_transforms['train']),
@@ -70,18 +69,16 @@ def create_dataloaders():
     test_loader = DataLoader(image_datasets['test'], batch_size=BATCH_SIZE, shuffle=False)
     return dataloaders, test_loader, image_datasets['train'].classes
 
-# =========================================================
-# MODEL SETUP
-# =========================================================
+
+#MODEL SETUP
 def build_efficientnet(num_classes):
     print("🔧 Loading EfficientNet-B4 pre-trained model...")
     model = models.efficientnet_b4(weights='IMAGENET1K_V1')
     model.classifier[1] = nn.Linear(model.classifier[1].in_features, num_classes)
     return model.to(DEVICE)
 
-# =========================================================
-# TRAINING FUNCTION
-# =========================================================
+
+#TRAINING FUNCTION
 def train_model(model, dataloaders, num_epochs=EPOCHS):
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
@@ -134,7 +131,7 @@ def train_model(model, dataloaders, num_epochs=EPOCHS):
 
     print(f"\n✅ Best Validation Accuracy: {best_acc*100:.2f}%")
 
-    # Plot Accuracy & Loss
+    #Plot Accuracy & Loss
     plt.figure(figsize=(10,4))
     plt.subplot(1,2,1)
     plt.plot(train_accs, label='Train Acc')
@@ -151,9 +148,8 @@ def train_model(model, dataloaders, num_epochs=EPOCHS):
     plt.savefig("training_curves.png")
     plt.show()
 
-# =========================================================
-# EVALUATION ON TEST SET
-# =========================================================
+
+#EVALUATION ON TEST SET
 def evaluate_model(model, test_loader, class_names):
     model.eval()
     preds, labels_list = [], []
@@ -178,12 +174,7 @@ def evaluate_model(model, test_loader, class_names):
     print("\n--- Classification Report ---")
     print(classification_report(labels_list, preds, target_names=class_names))
 
-        # ===============================
-    # FORMATTED METRICS TABLE OUTPUT
-    # ===============================
-    from sklearn.metrics import precision_recall_fscore_support, accuracy_score
-
-    # Overall metrics
+    #Overall metrics
     accuracy = accuracy_score(labels_list, preds)
     precision, recall, f1, _ = precision_recall_fscore_support(labels_list, preds, average='macro')
 
@@ -195,7 +186,7 @@ def evaluate_model(model, test_loader, class_names):
     print(f"{'Recall':<20}{recall:.3f}")
     print(f"{'F1-Score':<20}{f1:.3f}")
 
-    # Per-class detailed performance
+    #Per-class detailed performance
     class_prec, class_rec, class_f1, class_support = precision_recall_fscore_support(labels_list, preds)
 
     print("\n================= PER-CLASS PERFORMANCE =================")
@@ -208,9 +199,7 @@ def evaluate_model(model, test_loader, class_names):
     print("\n==========================================================")
 
 
-# =========================================================
-# PREDICTION VISUALIZATION
-# =========================================================
+#PREDICTION VISUALIZATION
 def annotate_prediction(image_path, model, class_names):
     model.eval()
     img = Image.open(image_path).convert("RGB")
@@ -233,9 +222,8 @@ def annotate_prediction(image_path, model, class_names):
     img.save(output_path)
     print(f"✅ Annotated image saved as: {output_path}")
 
-# =========================================================
-# MAIN
-# =========================================================
+
+#MAIN
 if __name__ == "__main__":
     print("🚀 Starting EfficientNet-B4 PCB Defect Classification...")
 
@@ -248,6 +236,6 @@ if __name__ == "__main__":
     model.load_state_dict(torch.load("efficientnet_b4_best(1).pth"))
     evaluate_model(model, test_loader, class_names)
 
-    # Example: test one image
+    #Example: test one image
     test_img = os.path.join(TEST_DIR, class_names[0], os.listdir(os.path.join(TEST_DIR, class_names[0]))[0])
     annotate_prediction(test_img, model, class_names)

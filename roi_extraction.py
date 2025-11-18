@@ -5,22 +5,22 @@ import glob
 from collections import defaultdict
 
 
-# === CONFIGURATION ===
+#CONFIGURATION
 TARGET_GROUP_PATH = r'C:\Users\DELL\OneDrive\Desktop\New folder\PCBData\group92000'
 IDEAL_KERNEL_SIZE = 5
 OUTPUT_ROOT_DIR = f'extracted_rois_group_{os.path.basename(TARGET_GROUP_PATH)}'
 LEFT_CROP_WIDTH = 40  # Width in pixels to ignore on left side
 
 
-# === PARAMETERS ===
-MAX_ASPECT_RATIO = 10.0        # Max allowed w/h ratio
-IOU_THRESHOLD = 0.4            # Minimum IoU for match
-BOX_PADDING = 15               # Padding pixels for ROI
-MIN_DEFECT_AREA = 8            # Minimum contour area
-DETECTED_BOX_X_OFFSET = 3      # Left shift pixels
+#PARAMETERS
+MAX_ASPECT_RATIO = 10.0        #Max allowed w/h ratio
+IOU_THRESHOLD = 0.4            #Minimum IoU for match
+BOX_PADDING = 15               #Padding pixels for ROI
+MIN_DEFECT_AREA = 8            #Minimum contour area
+DETECTED_BOX_X_OFFSET = 3      #Left shift pixels
 
 
-# === DEFECT CLASSES ===
+#DEFECT CLASSES
 DEFECT_CLASSES = {
     1: 'open',
     2: 'short', 
@@ -28,7 +28,7 @@ DEFECT_CLASSES = {
     4: 'spur',
     5: 'copper',
     6: 'pin-hole',
-    7: 'noise'  # Noise class
+    7: 'noise'  
 }
 
 
@@ -50,7 +50,7 @@ def calculate_iou(boxA, boxB):
 def check_iou_and_assign_label(detected_bbox, gt_labels, threshold=IOU_THRESHOLD):
     """Match detected box with ground truth and return label."""
     best_iou = 0.0
-    best_match_label_name = DEFECT_CLASSES[7]  # Default to noise
+    best_match_label_name = DEFECT_CLASSES[7]  
 
     for gt in gt_labels:
         gt_box = gt['bbox']
@@ -76,12 +76,12 @@ def load_ground_truth_labels(label_path, stats):
                 if len(parts) == 5:
                     xmin, ymin, xmax, ymax, class_id = map(int, parts)
                     
-                    # Skip boxes that start in the neglected left region
+                    #Skip boxes that start in the neglected left region
                     if xmin < LEFT_CROP_WIDTH:
                         stats['filter_boundary'] += 1
                         continue
 
-                    # Adjust coordinates relative to cropped region
+                    #Adjust coordinates relative to cropped region
                     xmin_adj = xmin - LEFT_CROP_WIDTH
                     xmax_adj = xmax - LEFT_CROP_WIDTH
                     
@@ -105,11 +105,11 @@ def preprocess_and_highlight_defects(template_path, test_path, kernel_dim):
     if template is None or test is None:
         return None, "Error loading images"
 
-    # Crop left side of both images
+    #Crop left side of both images
     template = template[:, LEFT_CROP_WIDTH:]
     test = test[:, LEFT_CROP_WIDTH:]
 
-    # Align images
+    #Align images
     warp_mode = cv2.MOTION_AFFINE
     warp_matrix = np.eye(2, 3, dtype=np.float32)
     criteria = (cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 500, 1e-6)
@@ -125,12 +125,12 @@ def preprocess_and_highlight_defects(template_path, test_path, kernel_dim):
     except cv2.error:
         aligned_test = test
 
-    # Process images
+    #Process images
     difference = cv2.absdiff(template, aligned_test)
     blurred_diff = cv2.GaussianBlur(difference, (3, 3), 0)
     _, defect_mask = cv2.threshold(blurred_diff, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
 
-    # Morphological operations
+    #Morphological operations
     kernel = np.ones((kernel_dim, kernel_dim), np.uint8)
     defect_mask = cv2.morphologyEx(defect_mask, cv2.MORPH_OPEN, kernel, iterations=1)
     defect_mask = cv2.morphologyEx(defect_mask, cv2.MORPH_CLOSE, kernel, iterations=1)
@@ -143,13 +143,13 @@ def extract_and_save_rois(defect_mask, original_image_path, set_id, gt_labels, o
     if defect_mask is None:
         return 0
 
-    # Load and crop original image
+    #Load and crop original image
     original_image = cv2.imread(original_image_path)
     if original_image is None:
         print(f"Error: Could not load original image {original_image_path}")
         return 0
     
-    # Crop left side of original image
+    #Crop left side of original image
     original_image = original_image[:, LEFT_CROP_WIDTH:]
     H, W, _ = original_image.shape
     
@@ -160,7 +160,7 @@ def extract_and_save_rois(defect_mask, original_image_path, set_id, gt_labels, o
         area = cv2.contourArea(contour)
         x, y, w, h = cv2.boundingRect(contour)
 
-        # Apply filters
+        #Apply filters
         if area < MIN_DEFECT_AREA:
             stats['filter_area'] += 1
             continue
@@ -168,28 +168,28 @@ def extract_and_save_rois(defect_mask, original_image_path, set_id, gt_labels, o
             stats['filter_aspect'] += 1
             continue
 
-        # Calculate coordinates
+        #Calculate coordinates
         x_start = max(0, x - BOX_PADDING - DETECTED_BOX_X_OFFSET)
         y_start = max(0, y - BOX_PADDING)
         x_end = min(W, x + w + BOX_PADDING - DETECTED_BOX_X_OFFSET)
         y_end = min(H, y + h + BOX_PADDING)
 
-        # Ensure minimum width
+        #Ensure minimum width
         if x_end <= x_start:
             x_end = x_start + 1
 
-        # Process detection
+        #Process detection
         detected_box = (x_start, y_start, x_end, y_end)
         label_name = check_iou_and_assign_label(detected_box, gt_labels)
         
-        # Update statistics
+        #Update statistics
         is_true_positive = (label_name != DEFECT_CLASSES[7])
         if is_true_positive:
             stats['true_positives'] += 1
         else:
             stats['false_positives'] += 1
 
-        # Save ROI
+        #Save ROI
         cropped_roi = original_image[y_start:y_end, x_start:x_end]
         target_dir = os.path.join(output_root_dir, label_name)
         os.makedirs(target_dir, exist_ok=True)
@@ -229,14 +229,14 @@ def main_pipeline():
     print(f"X-Axis Shift: {DETECTED_BOX_X_OFFSET} pixels")
     print("="*60)
 
-    # Initialize statistics
+    #Initialize statistics
     total_images_processed = 0
     stats = defaultdict(int, extracted_by_class={name: 0 for name in DEFECT_CLASSES.values()})
     stats['true_positives'] = 0
     stats['false_positives'] = 0
     stats['filter_boundary'] = 0
 
-    # Process images
+    #Process images
     for template_path, test_path, label_path, set_id in find_image_sets_in_group(TARGET_GROUP_PATH):
         total_images_processed += 1
         
@@ -263,7 +263,7 @@ def main_pipeline():
         )
         print(f"-> Processed {set_id}: {roi_count} ROIs extracted")
 
-    # Print report
+    #Print report
     total_extracted = stats['true_positives'] + stats['false_positives']
     print("\n" + "="*60)
     print("ROI EXTRACTION SUMMARY")

@@ -4,7 +4,7 @@ import os
 import matplotlib.pyplot as plt
 
 
-# --- CONFIGURATION ---
+#CONFIGURATION
 TEMPLATE_IMAGE_PATH = r'C:\Users\DELL\OneDrive\Desktop\New folder\PCBData\group00041\00041\00041003_temp.jpg'
 TEST_IMAGE_PATH = r'C:\Users\DELL\OneDrive\Desktop\New folder\PCBData\group00041\00041\00041003_test.jpg'
 OUTPUT_MASK_PATH = 'defect_difference_mask.jpg'
@@ -13,21 +13,21 @@ ALIGNED_TEST_PATH = 'aligned_test_image.jpg'
 LABEL_FILE_PATH = r'C:\Users\DELL\OneDrive\Desktop\New folder\PCBData\group00041\00041_not\00041003.txt'
 
 
-# --- PARAMETERS ---
+#PARAMETERS
 MAX_ASPECT_RATIO = 10.0        # Max allowed w/h ratio for bounding boxes
 IOU_THRESHOLD = 0.4            # Minimum IoU for a match
 BOX_PADDING = 15               # Padding pixels for detected boxes
 DETECTED_BOX_X_OFFSET = 3      # Pixels to shift detected boxes left
 
 
-# --- COLORS (BGR) ---
+#COLORS (BGR)
 GREEN = (0, 255, 0)            # Matched detections
 WHITE = (255, 255, 255)        # False Positive box
 YELLOW = (0, 255, 255)         # False Positive text
-BLUE = (255, 0, 0)            # Ground Truth
+BLUE = (255, 0, 0)             # Ground Truth
 
 
-# --- DEFECT CLASSES ---
+#DEFECT CLASSES
 DEFECT_CLASSES = {
     1: 'open',
     2: 'short',
@@ -112,7 +112,7 @@ def preprocess_and_highlight_defects(template_path, test_path, output_mask_path,
     """Generate defect mask from images."""
     print("Starting defect detection...")
 
-    # Load images
+    #Load images
     template = cv2.imread(template_path, cv2.IMREAD_GRAYSCALE)
     test = cv2.imread(test_path, cv2.IMREAD_GRAYSCALE)
     
@@ -120,7 +120,7 @@ def preprocess_and_highlight_defects(template_path, test_path, output_mask_path,
         print("Error loading images")
         return None
 
-    # Align images
+    #Align images
     warp_mode = cv2.MOTION_AFFINE
     warp_matrix = np.eye(2, 3, dtype=np.float32)
     criteria = (cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 500, 1e-6)
@@ -137,12 +137,12 @@ def preprocess_and_highlight_defects(template_path, test_path, output_mask_path,
         print("Alignment failed, using original test image")
         aligned_test = test
 
-    # Process images
+    #Process images
     difference = cv2.absdiff(template, aligned_test)
     blurred_diff = cv2.GaussianBlur(difference, (3, 3), 0)
     _, defect_mask = cv2.threshold(blurred_diff, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
 
-    # Morphological operations
+    #Morphological operations
     kernel = np.ones((5, 5), np.uint8)
     defect_mask = cv2.morphologyEx(defect_mask, cv2.MORPH_OPEN, kernel)
     defect_mask = cv2.morphologyEx(defect_mask, cv2.MORPH_CLOSE, kernel)
@@ -163,7 +163,7 @@ def visualize_detections_and_ground_truth(
     if defect_mask is None:
         return []
 
-    # Load and prepare image
+    #Load and prepare image
     vis_image = cv2.imread(original_image_path)
     if vis_image is None:
         return []
@@ -171,29 +171,29 @@ def visualize_detections_and_ground_truth(
     H, W, _ = vis_image.shape
     detected_rois = []
 
-    # Process detected defects
+    #Process detected defects
     contours, _ = cv2.findContours(defect_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     for contour in contours:
         area = cv2.contourArea(contour)
         x, y, w, h = cv2.boundingRect(contour)
 
-        # Apply filters
+        #Apply filters
         if area < min_defect_area:
             continue
         if w > 0 and h > 0 and max(w/h, h/w) > max_aspect_ratio:
             continue
 
-        # Calculate box coordinates with padding and offset
+        #Calculate box coordinates with padding and offset
         x_padded = max(0, x - BOX_PADDING - DETECTED_BOX_X_OFFSET)
         y_padded = max(0, y - BOX_PADDING)
         x_max_padded = min(W, x + w + BOX_PADDING - DETECTED_BOX_X_OFFSET)
         y_max_padded = min(H, y + h + BOX_PADDING)
 
-        # Process detection
+        #Process detection
         detected_box = (x_padded, y_padded, x_max_padded, y_max_padded)
         label, box_color, text_color = check_iou_and_assign_label(detected_box, gt_labels)
 
-        # Draw detection
+        #Draw detection
         cv2.rectangle(vis_image, (x_padded, y_padded), (x_max_padded, y_max_padded), box_color, 2)
         cv2.putText(
             vis_image, 
@@ -212,7 +212,7 @@ def visualize_detections_and_ground_truth(
             'area': int(area)
         })
 
-    # Draw ground truth boxes
+    #Draw ground truth boxes
     for gt in gt_labels:
         xmin, ymin, xmax, ymax = gt['bbox']
         if xmax > xmin and ymax > ymin:
@@ -234,11 +234,11 @@ def visualize_detections_and_ground_truth(
 
 def main():
     """Main execution pipeline."""
-    # Initialize
+    #Initialize
     CROP_WIDTH = 0
     ground_truth_labels = load_ground_truth_labels(LABEL_FILE_PATH, CROP_WIDTH)
     
-    # Process images
+    #Process images
     defect_mask = preprocess_and_highlight_defects(
         TEMPLATE_IMAGE_PATH,
         TEST_IMAGE_PATH,
@@ -246,7 +246,7 @@ def main():
         ALIGNED_TEST_PATH
     )
 
-    # Detect and visualize
+    #Detect and visualize
     if defect_mask is not None:
         detections = visualize_detections_and_ground_truth(
             defect_mask,
