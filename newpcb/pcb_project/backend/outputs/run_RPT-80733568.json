@@ -1,0 +1,29 @@
+{
+  "report_id": "RPT-80733568",
+  "created_at": "2025-11-12 14:32:21",
+  "parameters": {
+    "difference_threshold": 30,
+    "min_roi_area": 50,
+    "confidence_threshold": 0.6
+  },
+  "stats": {
+    "total": 6,
+    "high": 4,
+    "med": 2,
+    "low": 0,
+    "avg_conf": 0.7962114016215006
+  },
+  "files": {
+    "pdf": "PCB_Report_RPT-80733568_20251112_143221.pdf",
+    "csv": "defects_RPT-80733568.csv",
+    "template": "template_RPT-80733568.png",
+    "test": "test_RPT-80733568.png",
+    "annotated": "annotated_RPT-80733568.png",
+    "diff": "diff_RPT-80733568.png",
+    "mask": "mask_RPT-80733568.png",
+    "bar": "bar_RPT-80733568.png",
+    "pie": "pie_RPT-80733568.png",
+    "scatter": "scatter_RPT-80733568.png",
+    "hist": "hist_RPT-80733568.png"
+  }
+}

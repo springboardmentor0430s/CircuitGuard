@@ -1,0 +1,4 @@
+defect_id,class,confidence,x,y,w,h,area
+1,open,0.9097,265,507,375,28,4030
+3,open,0.6352,62,301,31,25,166
+4,mousebite,0.9122,0,0,640,640,168252

@@ -1,0 +1,29 @@
+{
+  "report_id": "RPT-21BC6B0E",
+  "created_at": "2025-11-17 22:33:30",
+  "parameters": {
+    "difference_threshold": 30,
+    "min_roi_area": 50,
+    "confidence_threshold": 0.6
+  },
+  "stats": {
+    "total": 3,
+    "high": 3,
+    "med": 0,
+    "low": 0,
+    "avg_conf": 0.9038932919502258
+  },
+  "files": {
+    "pdf": "PCB_Report_RPT-21BC6B0E_20251117_223328.pdf",
+    "csv": "defects_RPT-21BC6B0E.csv",
+    "template": "template_RPT-21BC6B0E.png",
+    "test": "test_RPT-21BC6B0E.png",
+    "annotated": "annotated_RPT-21BC6B0E.png",
+    "diff": "diff_RPT-21BC6B0E.png",
+    "mask": "mask_RPT-21BC6B0E.png",
+    "bar": "bar_RPT-21BC6B0E.png",
+    "pie": "pie_RPT-21BC6B0E.png",
+    "scatter": "scatter_RPT-21BC6B0E.png",
+    "hist": "hist_RPT-21BC6B0E.png"
+  }
+}

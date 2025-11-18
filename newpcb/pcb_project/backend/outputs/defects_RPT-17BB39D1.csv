@@ -1,0 +1,4 @@
+defect_id,class,confidence,x,y,w,h,area
+2,open,0.8720,457,275,90,30,857
+3,open,0.7362,603,129,37,35,473
+6,spurious copper,0.7179,0,0,640,640,247730

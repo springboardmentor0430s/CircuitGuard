@@ -1,0 +1,29 @@
+{
+  "report_id": "RPT-21BD370E",
+  "created_at": "2025-11-12 14:26:26",
+  "parameters": {
+    "difference_threshold": 30,
+    "min_roi_area": 50,
+    "confidence_threshold": 0.6
+  },
+  "stats": {
+    "total": 11,
+    "high": 2,
+    "med": 9,
+    "low": 0,
+    "avg_conf": 0.7235205877910961
+  },
+  "files": {
+    "pdf": "PCB_Report_RPT-21BD370E_20251112_142626.pdf",
+    "csv": "defects_RPT-21BD370E.csv",
+    "template": "template_RPT-21BD370E.png",
+    "test": "test_RPT-21BD370E.png",
+    "annotated": "annotated_RPT-21BD370E.png",
+    "diff": "diff_RPT-21BD370E.png",
+    "mask": "mask_RPT-21BD370E.png",
+    "bar": "bar_RPT-21BD370E.png",
+    "pie": "pie_RPT-21BD370E.png",
+    "scatter": "scatter_RPT-21BD370E.png",
+    "hist": "hist_RPT-21BD370E.png"
+  }
+}

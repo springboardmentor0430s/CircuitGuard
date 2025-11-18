@@ -1,0 +1,29 @@
+{
+  "report_id": "RPT-56710A90",
+  "created_at": "2025-11-13 06:26:58",
+  "parameters": {
+    "difference_threshold": 30,
+    "min_roi_area": 50,
+    "confidence_threshold": 0.6
+  },
+  "stats": {
+    "total": 1,
+    "high": 1,
+    "med": 0,
+    "low": 0,
+    "avg_conf": 0.8830134272575378
+  },
+  "files": {
+    "pdf": "PCB_Report_RPT-56710A90_20251113_062658.pdf",
+    "csv": "defects_RPT-56710A90.csv",
+    "template": "template_RPT-56710A90.png",
+    "test": "test_RPT-56710A90.png",
+    "annotated": "annotated_RPT-56710A90.png",
+    "diff": "diff_RPT-56710A90.png",
+    "mask": "mask_RPT-56710A90.png",
+    "bar": "bar_RPT-56710A90.png",
+    "pie": "pie_RPT-56710A90.png",
+    "scatter": "scatter_RPT-56710A90.png",
+    "hist": "hist_RPT-56710A90.png"
+  }
+}

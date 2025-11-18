@@ -1,0 +1,29 @@
+{
+  "report_id": "RPT-967CE29E",
+  "created_at": "2025-11-17 21:36:34",
+  "parameters": {
+    "difference_threshold": 30,
+    "min_roi_area": 50,
+    "confidence_threshold": 0.6
+  },
+  "stats": {
+    "total": 11,
+    "high": 0,
+    "med": 0,
+    "low": 11,
+    "avg_conf": 0.0
+  },
+  "files": {
+    "pdf": "PCB_Report_RPT-967CE29E_20251117_213634.pdf",
+    "csv": "defects_RPT-967CE29E.csv",
+    "template": "template_RPT-967CE29E.png",
+    "test": "test_RPT-967CE29E.png",
+    "annotated": "annotated_RPT-967CE29E.png",
+    "diff": "diff_RPT-967CE29E.png",
+    "mask": "mask_RPT-967CE29E.png",
+    "bar": "bar_RPT-967CE29E.png",
+    "pie": "pie_RPT-967CE29E.png",
+    "scatter": "scatter_RPT-967CE29E.png",
+    "hist": "hist_RPT-967CE29E.png"
+  }
+}

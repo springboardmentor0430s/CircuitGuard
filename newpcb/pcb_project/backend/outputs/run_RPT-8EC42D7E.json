@@ -1,0 +1,29 @@
+{
+  "report_id": "RPT-8EC42D7E",
+  "created_at": "2025-11-12 13:49:29",
+  "parameters": {
+    "difference_threshold": 30,
+    "min_roi_area": 50,
+    "confidence_threshold": 0.6
+  },
+  "stats": {
+    "total": 6,
+    "high": 4,
+    "med": 2,
+    "low": 0,
+    "avg_conf": 0.7962114016215006
+  },
+  "files": {
+    "pdf": "PCB_Report_RPT-8EC42D7E_20251112_134927.pdf",
+    "csv": "defects_RPT-8EC42D7E.csv",
+    "template": "template_RPT-8EC42D7E.png",
+    "test": "test_RPT-8EC42D7E.png",
+    "annotated": "annotated_RPT-8EC42D7E.png",
+    "diff": "diff_RPT-8EC42D7E.png",
+    "mask": "mask_RPT-8EC42D7E.png",
+    "bar": "bar_RPT-8EC42D7E.png",
+    "pie": "pie_RPT-8EC42D7E.png",
+    "scatter": "scatter_RPT-8EC42D7E.png",
+    "hist": "hist_RPT-8EC42D7E.png"
+  }
+}

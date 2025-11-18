@@ -1,0 +1,29 @@
+{
+  "report_id": "RPT-2199BE31",
+  "created_at": "2025-11-17 22:33:50",
+  "parameters": {
+    "difference_threshold": 30,
+    "min_roi_area": 50,
+    "confidence_threshold": 0.6
+  },
+  "stats": {
+    "total": 2,
+    "high": 1,
+    "med": 1,
+    "low": 0,
+    "avg_conf": 0.8012401461601257
+  },
+  "files": {
+    "pdf": "PCB_Report_RPT-2199BE31_20251117_223349.pdf",
+    "csv": "defects_RPT-2199BE31.csv",
+    "template": "template_RPT-2199BE31.png",
+    "test": "test_RPT-2199BE31.png",
+    "annotated": "annotated_RPT-2199BE31.png",
+    "diff": "diff_RPT-2199BE31.png",
+    "mask": "mask_RPT-2199BE31.png",
+    "bar": "bar_RPT-2199BE31.png",
+    "pie": "pie_RPT-2199BE31.png",
+    "scatter": "scatter_RPT-2199BE31.png",
+    "hist": "hist_RPT-2199BE31.png"
+  }
+}

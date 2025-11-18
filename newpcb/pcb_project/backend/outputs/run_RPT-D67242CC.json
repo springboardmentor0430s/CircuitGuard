@@ -1,0 +1,29 @@
+{
+  "report_id": "RPT-D67242CC",
+  "created_at": "2025-11-12 19:25:30",
+  "parameters": {
+    "difference_threshold": 30,
+    "min_roi_area": 50,
+    "confidence_threshold": 0.6
+  },
+  "stats": {
+    "total": 6,
+    "high": 4,
+    "med": 2,
+    "low": 0,
+    "avg_conf": 0.7962114016215006
+  },
+  "files": {
+    "pdf": "PCB_Report_RPT-D67242CC_20251112_192530.pdf",
+    "csv": "defects_RPT-D67242CC.csv",
+    "template": "template_RPT-D67242CC.png",
+    "test": "test_RPT-D67242CC.png",
+    "annotated": "annotated_RPT-D67242CC.png",
+    "diff": "diff_RPT-D67242CC.png",
+    "mask": "mask_RPT-D67242CC.png",
+    "bar": "bar_RPT-D67242CC.png",
+    "pie": "pie_RPT-D67242CC.png",
+    "scatter": "scatter_RPT-D67242CC.png",
+    "hist": "hist_RPT-D67242CC.png"
+  }
+}

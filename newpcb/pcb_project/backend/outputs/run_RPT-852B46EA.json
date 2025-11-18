@@ -1,0 +1,29 @@
+{
+  "report_id": "RPT-852B46EA",
+  "created_at": "2025-11-11 19:36:41",
+  "parameters": {
+    "difference_threshold": 30,
+    "min_roi_area": 50,
+    "confidence_threshold": 0.6
+  },
+  "stats": {
+    "total": 6,
+    "high": 4,
+    "med": 2,
+    "low": 0,
+    "avg_conf": 0.7962114016215006
+  },
+  "files": {
+    "pdf": "PCB_Report_RPT-852B46EA_20251111_193641.pdf",
+    "csv": "defects_RPT-852B46EA.csv",
+    "template": "template_RPT-852B46EA.png",
+    "test": "test_RPT-852B46EA.png",
+    "annotated": "annotated_RPT-852B46EA.png",
+    "diff": "diff_RPT-852B46EA.png",
+    "mask": "mask_RPT-852B46EA.png",
+    "bar": "bar_RPT-852B46EA.png",
+    "pie": "pie_RPT-852B46EA.png",
+    "scatter": "scatter_RPT-852B46EA.png",
+    "hist": "hist_RPT-852B46EA.png"
+  }
+}

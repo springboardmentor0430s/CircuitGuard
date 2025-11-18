@@ -1,0 +1,28 @@
+{
+  "report_id": "RPT-E967CC5F",
+  "created_at": "2025-11-11 19:12:46",
+  "parameters": {
+    "difference_threshold": 30,
+    "min_roi_area": 50,
+    "confidence_threshold": 0.6
+  },
+  "stats": {
+    "total": 6,
+    "high": 4,
+    "med": 2,
+    "low": 0,
+    "avg_conf": 0.7962114016215006
+  },
+  "files": {
+    "pdf": "PCB_Report_RPT-E967CC5F_20251111_191245.pdf",
+    "template": "template_RPT-E967CC5F.png",
+    "test": "test_RPT-E967CC5F.png",
+    "annotated": "annotated_RPT-E967CC5F.png",
+    "diff": "diff_RPT-E967CC5F.png",
+    "mask": "mask_RPT-E967CC5F.png",
+    "bar": "bar_RPT-E967CC5F.png",
+    "pie": "pie_RPT-E967CC5F.png",
+    "scatter": "scatter_RPT-E967CC5F.png",
+    "hist": "hist_RPT-E967CC5F.png"
+  }
+}

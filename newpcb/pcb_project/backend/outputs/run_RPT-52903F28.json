@@ -1,0 +1,29 @@
+{
+  "report_id": "RPT-52903F28",
+  "created_at": "2025-11-17 22:00:01",
+  "parameters": {
+    "difference_threshold": 30,
+    "min_roi_area": 50,
+    "confidence_threshold": 0.6
+  },
+  "stats": {
+    "total": 0,
+    "high": 0,
+    "med": 0,
+    "low": 0,
+    "avg_conf": 0.0
+  },
+  "files": {
+    "pdf": "PCB_Report_RPT-52903F28_20251117_220001.pdf",
+    "csv": "defects_RPT-52903F28.csv",
+    "template": "template_RPT-52903F28.png",
+    "test": "test_RPT-52903F28.png",
+    "annotated": "annotated_RPT-52903F28.png",
+    "diff": "diff_RPT-52903F28.png",
+    "mask": "mask_RPT-52903F28.png",
+    "bar": "bar_RPT-52903F28.png",
+    "pie": "pie_RPT-52903F28.png",
+    "scatter": "scatter_RPT-52903F28.png",
+    "hist": "hist_RPT-52903F28.png"
+  }
+}

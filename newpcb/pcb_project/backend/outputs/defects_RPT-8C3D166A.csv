@@ -1,0 +1,5 @@
+defect_id,class,confidence,x,y,w,h,area
+1,unknown,0.0000,12,189,35,24,210
+2,unknown,0.0000,0,148,33,22,216
+3,unknown,0.0000,4,127,27,21,112
+4,unknown,0.0000,0,0,640,640,273856

@@ -1,0 +1,29 @@
+{
+  "report_id": "RPT-3460B1A0",
+  "created_at": "2025-11-12 14:33:08",
+  "parameters": {
+    "difference_threshold": 30,
+    "min_roi_area": 50,
+    "confidence_threshold": 0.6
+  },
+  "stats": {
+    "total": 4,
+    "high": 1,
+    "med": 3,
+    "low": 0,
+    "avg_conf": 0.7552333772182465
+  },
+  "files": {
+    "pdf": "PCB_Report_RPT-3460B1A0_20251112_143308.pdf",
+    "csv": "defects_RPT-3460B1A0.csv",
+    "template": "template_RPT-3460B1A0.png",
+    "test": "test_RPT-3460B1A0.png",
+    "annotated": "annotated_RPT-3460B1A0.png",
+    "diff": "diff_RPT-3460B1A0.png",
+    "mask": "mask_RPT-3460B1A0.png",
+    "bar": "bar_RPT-3460B1A0.png",
+    "pie": "pie_RPT-3460B1A0.png",
+    "scatter": "scatter_RPT-3460B1A0.png",
+    "hist": "hist_RPT-3460B1A0.png"
+  }
+}

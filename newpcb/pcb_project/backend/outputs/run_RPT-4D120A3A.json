@@ -1,0 +1,29 @@
+{
+  "report_id": "RPT-4D120A3A",
+  "created_at": "2025-11-12 13:41:21",
+  "parameters": {
+    "difference_threshold": 30,
+    "min_roi_area": 50,
+    "confidence_threshold": 0.6
+  },
+  "stats": {
+    "total": 6,
+    "high": 4,
+    "med": 2,
+    "low": 0,
+    "avg_conf": 0.7962114016215006
+  },
+  "files": {
+    "pdf": "PCB_Report_RPT-4D120A3A_20251112_134119.pdf",
+    "csv": "defects_RPT-4D120A3A.csv",
+    "template": "template_RPT-4D120A3A.png",
+    "test": "test_RPT-4D120A3A.png",
+    "annotated": "annotated_RPT-4D120A3A.png",
+    "diff": "diff_RPT-4D120A3A.png",
+    "mask": "mask_RPT-4D120A3A.png",
+    "bar": "bar_RPT-4D120A3A.png",
+    "pie": "pie_RPT-4D120A3A.png",
+    "scatter": "scatter_RPT-4D120A3A.png",
+    "hist": "hist_RPT-4D120A3A.png"
+  }
+}

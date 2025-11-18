@@ -1,0 +1,17 @@
+id,class,confidence
+8,open,0.386
+10,open,0.696
+11,open,0.587
+31,open,0.782
+51,open,0.737
+96,open,0.670
+132,open,0.878
+153,open,0.676
+163,short,0.428
+187,open,0.645
+207,spurious copper,0.508
+223,open,0.880
+224,open,0.790
+259,open,0.692
+281,open,0.887
+285,open,0.606

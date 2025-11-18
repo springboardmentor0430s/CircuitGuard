@@ -1,0 +1,29 @@
+{
+  "report_id": "RPT-C4D8A561",
+  "created_at": "2025-11-17 21:36:55",
+  "parameters": {
+    "difference_threshold": 30,
+    "min_roi_area": 50,
+    "confidence_threshold": 0.6
+  },
+  "stats": {
+    "total": 10,
+    "high": 0,
+    "med": 0,
+    "low": 10,
+    "avg_conf": 0.0
+  },
+  "files": {
+    "pdf": "PCB_Report_RPT-C4D8A561_20251117_213655.pdf",
+    "csv": "defects_RPT-C4D8A561.csv",
+    "template": "template_RPT-C4D8A561.png",
+    "test": "test_RPT-C4D8A561.png",
+    "annotated": "annotated_RPT-C4D8A561.png",
+    "diff": "diff_RPT-C4D8A561.png",
+    "mask": "mask_RPT-C4D8A561.png",
+    "bar": "bar_RPT-C4D8A561.png",
+    "pie": "pie_RPT-C4D8A561.png",
+    "scatter": "scatter_RPT-C4D8A561.png",
+    "hist": "hist_RPT-C4D8A561.png"
+  }
+}

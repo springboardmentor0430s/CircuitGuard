@@ -1,0 +1,29 @@
+{
+  "report_id": "RPT-F181BDD6",
+  "created_at": "2025-11-12 13:22:51",
+  "parameters": {
+    "difference_threshold": 30,
+    "min_roi_area": 50,
+    "confidence_threshold": 0.6
+  },
+  "stats": {
+    "total": 6,
+    "high": 4,
+    "med": 2,
+    "low": 0,
+    "avg_conf": 0.7962114016215006
+  },
+  "files": {
+    "pdf": "PCB_Report_RPT-F181BDD6_20251112_132250.pdf",
+    "csv": "defects_RPT-F181BDD6.csv",
+    "template": "template_RPT-F181BDD6.png",
+    "test": "test_RPT-F181BDD6.png",
+    "annotated": "annotated_RPT-F181BDD6.png",
+    "diff": "diff_RPT-F181BDD6.png",
+    "mask": "mask_RPT-F181BDD6.png",
+    "bar": "bar_RPT-F181BDD6.png",
+    "pie": "pie_RPT-F181BDD6.png",
+    "scatter": "scatter_RPT-F181BDD6.png",
+    "hist": "hist_RPT-F181BDD6.png"
+  }
+}

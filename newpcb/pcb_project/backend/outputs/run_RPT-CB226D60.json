@@ -1,0 +1,29 @@
+{
+  "report_id": "RPT-CB226D60",
+  "created_at": "2025-11-12 14:21:53",
+  "parameters": {
+    "difference_threshold": 30,
+    "min_roi_area": 50,
+    "confidence_threshold": 0.6
+  },
+  "stats": {
+    "total": 6,
+    "high": 4,
+    "med": 2,
+    "low": 0,
+    "avg_conf": 0.7962114016215006
+  },
+  "files": {
+    "pdf": "PCB_Report_RPT-CB226D60_20251112_142153.pdf",
+    "csv": "defects_RPT-CB226D60.csv",
+    "template": "template_RPT-CB226D60.png",
+    "test": "test_RPT-CB226D60.png",
+    "annotated": "annotated_RPT-CB226D60.png",
+    "diff": "diff_RPT-CB226D60.png",
+    "mask": "mask_RPT-CB226D60.png",
+    "bar": "bar_RPT-CB226D60.png",
+    "pie": "pie_RPT-CB226D60.png",
+    "scatter": "scatter_RPT-CB226D60.png",
+    "hist": "hist_RPT-CB226D60.png"
+  }
+}

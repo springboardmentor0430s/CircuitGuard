@@ -1,0 +1,2 @@
+defect_id,class,confidence,x,y,w,h,area
+1,open,0.8830,629,284,11,33,80
