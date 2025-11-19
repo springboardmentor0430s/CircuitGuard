@@ -1,0 +1,8 @@
+timestamp,template,test,summary,confidence,min_area,max_area,blur,pdf_path
+2025-11-18 00:02:24.955307,00041000_temp.jpg,00041000_test.jpg,{'Spur': 5, 'Spurious Cu': 3, 'Short': 2, 'Pin-hole': 1},0.5,40,3000,5,outputs/final_fancy_report.pdf
+2025-11-18 01:06:51.414869,00041000_temp.jpg,00041000_test.jpg,{'Spur': 4, 'Spurious Cu': 1, 'Short': 1, 'Pin-hole': 1},0.5,120,3000,5,outputs/final_fancy_report.pdf
+2025-11-18 01:22:13.424575,00041007_temp.jpg,00041007_test.jpg,{'Spur': 15, 'Short': 18, 'Mousebite': 5, 'Open': 10, 'Pin-hole': 4, 'Spurious Cu': 2},0.5,40,3000,5,outputs/final_fancy_report.pdf
+2025-11-18 01:22:56.426538,00041007_temp.jpg,00041007_test.jpg,{'Spur': 20, 'Short': 12, 'Mousebite': 3, 'Open': 3, 'Pin-hole': 3, 'Spurious Cu': 5},0.5,120,3000,7,outputs/final_fancy_report.pdf
+2025-11-19 11:18:11.352253,00041000_temp.jpg,00041000_test.jpg,{'Short': 4, 'Mousebite': 2, 'Open': 3, 'Spur': 1},0.5,40,3000,5,outputs/final_fancy_report.pdf
+2025-11-19 11:19:30.976619,00041009_temp.jpg,00041009_test.jpg,{'Short': 5, 'Pin-hole': 11, 'Open': 2, 'Mousebite': 20, 'Spur': 16, 'Spurious Cu': 4},0.5,40,3000,5,outputs/final_fancy_report.pdf
+2025-11-19 11:20:01.014970,00041009_temp.jpg,00041009_test.jpg,{'Short': 3, 'Pin-hole': 7, 'Open': 3, 'Mousebite': 19, 'Spur': 7, 'Spurious Cu': 2},0.5,120,3000,7,outputs/final_fancy_report.pdf

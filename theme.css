@@ -1,0 +1,135 @@
+/* =========================================================
+   CircuitGuard Royal Violet Theme
+   Author: Saurabh Singh
+   Elegant Violet + Soft White UI Theme
+========================================================= */
+
+/* ====== GLOBAL ====== */
+html, body, [class*="css"] {
+  font-family: 'Poppins', sans-serif;
+  background-color: #faf8ff !important;
+  color: #2a1a4a !important;
+}
+
+/* ====== HEADERS ====== */
+h1, h2, h3, h4 {
+  color: #5a00b3 !important;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+}
+
+/* ====== BUTTONS ====== */
+.stButton>button, .stDownloadButton>button {
+  background: linear-gradient(90deg, #6a00f4, #b892ff);
+  color: #ffffff !important;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  padding: 0.6rem 1.2rem;
+  transition: all 0.25s ease;
+  box-shadow: 0px 2px 6px rgba(106, 0, 244, 0.35);
+}
+.stButton>button:hover, .stDownloadButton>button:hover {
+  background: #5a00e0 !important;
+  transform: scale(1.03);
+}
+
+/* ====== METRICS ====== */
+div[data-testid="stMetric"] {
+  background: #f3ebff !important;
+  border: 1px solid #d8c2ff !important;
+  border-radius: 10px;
+  padding: 15px;
+  box-shadow: 0 2px 4px rgba(106, 0, 244, 0.1);
+}
+[data-testid="stMetricValue"] {
+  color: #6a00f4 !important;
+  font-weight: 700 !important;
+}
+
+/* ====== SIDEBAR ====== */
+[data-testid="stSidebar"] {
+  background-color: #f5f0ff !important;
+  border-right: 1px solid #e1d2ff;
+}
+[data-testid="stSidebar"] h1, 
+[data-testid="stSidebar"] h2, 
+[data-testid="stSidebar"] h3 {
+  color: #5a00b3 !important;
+}
+
+/* ====== UPLOADERS ====== */
+[data-testid="stFileUploaderDropzone"] {
+  border: 2px dashed #9a63ff !important;
+  background-color: #f9f5ff !important;
+  border-radius: 10px;
+}
+[data-testid="stFileUploaderDropzone"] div {
+  color: #2a1a4a !important;
+  font-weight: 500;
+}
+
+/* ====== IMAGES ====== */
+img {
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+/* ====== ALERTS ====== */
+.stAlert {
+  border-radius: 10px !important;
+  background-color: #f3e8ff !important;
+  border: 1px solid #d9bfff !important;
+  color: #2a1a4a !important;
+}
+
+/* ====== TABLES ====== */
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin-top: 10px;
+  border-radius: 8px;
+  overflow: hidden;
+}
+th {
+  background-color: #6a00f4;
+  color: white;
+  padding: 8px;
+  font-weight: 600;
+  text-align: left;
+}
+td {
+  background-color: #f9f5ff;
+  color: #2a1a4a;
+  padding: 8px;
+}
+tr:nth-child(even) td {
+  background-color: #efe6ff;
+}
+
+/* ====== ANIMATIONS ====== */
+@keyframes fadeIn {
+  0% {opacity: 0; transform: translateY(10px);}
+  100% {opacity: 1; transform: translateY(0);}
+}
+.fade-in {
+  animation: fadeIn 0.7s ease-in-out;
+}
+
+/* ====== ROI GRID ====== */
+.roi-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.roi-card {
+  background-color: #f9f5ff;
+  border: 1px solid #d8c2ff;
+  border-radius: 10px;
+  box-shadow: 0 1px 5px rgba(106, 0, 244, 0.1);
+  padding: 8px;
+  width: 120px;
+  text-align: center;
+  font-size: 11px;
+  color: #2a1a4a;
+}

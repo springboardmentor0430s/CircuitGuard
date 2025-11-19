@@ -1,0 +1,3 @@
+Timestamp,Template Image,Test Image,Total Defects,Confidence Threshold,Min Area,Max Area,Blur Strength,PDF Path
+2025-11-17 23:42:13,00041000_temp.jpg,00041000_test.jpg,11,0.5,40,3000,5,outputs/final_fancy_report.pdf
+2025-11-17 23:42:32,00041000_temp.jpg,00041000_test.jpg,6,0.56,125,3000,7,outputs/final_fancy_report.pdf
