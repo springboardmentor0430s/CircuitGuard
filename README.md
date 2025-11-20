@@ -78,7 +78,7 @@ CircuitGuard/
 │ ├── raw/                # 1,500+ original images and annotations
 │ └── processed/          # 10,000+ cropped images for training
 │
-├── models/
+├── Models/
 │ └── best_model.pth      # The final 99.65% accuracy model
 │
 ├── outputs/
@@ -94,4 +94,5 @@ CircuitGuard/
 ├── app.py                # The main Streamlit application
 ├── pdf_generator.py      # Module for creating the PDF report
 ├── requirements.txt      # All Python dependencies
+
 └── README.md             # This documentation file
