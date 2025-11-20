@@ -55,8 +55,8 @@ This system uses computer vision and deep learning (EfficientNet-B4) to automati
 
 ### 1. Clone Repository
 ```bash
-git clone https://github.com/springboardmentor0430s/CircuitGuard/tree/CircuitGuard/TejasBadhe
-cd CircuitGuard
+git clone https://github.com/TMB02/circuitguard.git
+cd circuitguard
 ```
 
 ### 2. Download Dataset
