@@ -59,7 +59,7 @@ git clone https://github.com/TMB02/circuitguard.git
 cd circuitguard
 ```
 
-### 2. Download Dataset
+### 2. Download Dataset (Optional)
 Download and extract the PCB dataset:
 
 **Dataset Link:** [Download PCB_DATASET.zip from Dropbox](https://www.dropbox.com/scl/fi/4vrtqn7t001yl41oucflu/PCB_DATASET.zip?rlkey=pghz15q2bsg2&e=1&st=odxdm9ml)
