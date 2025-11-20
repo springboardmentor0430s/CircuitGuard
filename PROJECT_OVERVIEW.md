@@ -36,7 +36,7 @@ https://drive.google.com/file/d/1TsArrsEhypOJEkUwJpmPD_lvAg5xteXe/view?usp=shari
 ```mermaid
 flowchart LR
 
-User[User] --> UI[React Frontend (App.js)]
+User[User] --> UI[React Frontend]
 
 subgraph Frontend [Frontend: React]
   UI -->|POST /api/process| Axios
@@ -44,10 +44,10 @@ subgraph Frontend [Frontend: React]
   UI -.->|GET /api/defect-types| Axios
 end
 
-Axios -->|HTTP| API[(Flask API)]
+Axios -->|HTTP| API
 
 subgraph Backend [Backend: Flask + CV Pipeline]
-  API -->|calls| Pipeline[CircuitGuardPipeline (main.py)]
+  API -->|calls| Pipeline[CircuitGuardPipeline]
   Pipeline --> Align[src.preprocessing.alignment]
   Pipeline --> Binary[src.preprocessing.binary_defect_detection]
   Pipeline --> Contours[src.preprocessing.contour_detection]
@@ -55,9 +55,9 @@ subgraph Backend [Backend: Flask + CV Pipeline]
   Pipeline --> Utils[pdf_report_utils.generate_pdf_report]
 end
 
-Classifier -->|PyTorch| Model[(best_model.pth)]
+Classifier -->|PyTorch| Model
 
-Pipeline --> Results[(Annotated images, defects, stats)]
+Pipeline --> Results
 API -->|JSON/Base64 images| UI
 API -->|PDF stream| UI
 ```
