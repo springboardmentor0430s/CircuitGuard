@@ -1,0 +1,10 @@
+names:
+- missing_hole
+- mouse_bite
+- open_circuit
+- short
+- spur
+- spurious_copper
+nc: 6
+train: C:\Users\mhema\OneDrive\Documents\OneDrive\Desktop\PCB-Defects-detection\PCB_DATASET\output\images/train
+val: C:\Users\mhema\OneDrive\Documents\OneDrive\Desktop\PCB-Defects-detection\PCB_DATASET\output\images/val
