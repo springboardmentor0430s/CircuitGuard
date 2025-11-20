@@ -1,0 +1,42 @@
+{
+    "os": "Windows-10-10.0.26200-SP0",
+    "python": "3.10.8",
+    "heartbeatAt": "2025-11-07T13:41:48.775989",
+    "startedAt": "2025-11-07T13:41:46.877381",
+    "docker": null,
+    "cuda": null,
+    "args": [],
+    "state": "running",
+    "program": "C:\\Users\\mhema\\OneDrive\\Documents\\OneDrive\\Desktop\\PCB-Defects-detection\\Code\\Dataprocess.py",
+    "codePath": "Code\\Dataprocess.py",
+    "git": {
+        "remote": "https://github.com/ArnxbSaha/PCB-Defects-detection.git",
+        "commit": "9aa048e92539020a30392030cdb56011e4397edc"
+    },
+    "email": "mhemanarasimhaharshapavan@gmail.com",
+    "root": "C:/Users/mhema/OneDrive/Documents/OneDrive/Desktop/PCB-Defects-detection",
+    "host": "HARSHA",
+    "username": "mhema",
+    "executable": "C:\\Users\\mhema\\OneDrive\\Documents\\OneDrive\\Desktop\\PCB-Defects-detection\\venv\\Scripts\\python.exe",
+    "cpu_count": 10,
+    "cpu_count_logical": 12,
+    "cpu_freq": {
+        "current": 1300.0,
+        "min": 0.0,
+        "max": 1300.0
+    },
+    "cpu_freq_per_core": [
+        {
+            "current": 1300.0,
+            "min": 0.0,
+            "max": 1300.0
+        }
+    ],
+    "disk": {
+        "total": 932.7421836853027,
+        "used": 401.0935173034668
+    },
+    "memory": {
+        "total": 7.6920928955078125
+    }
+}
