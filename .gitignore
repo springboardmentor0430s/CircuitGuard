@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+
+# Dataset - Large files
+PCB_DATASET/images/
+PCB_DATASET/Annotations/
+PCB_DATASET/rotation/
+PCB_DATASET/PCB_USED/
+
+# Processed Data
+data/splits/train/
+data/splits/val/
+data/splits/test/
+data/rois/Missing_hole/
+data/rois/Mouse_bite/
+data/rois/Open_circuit/
+data/rois/Short/
+data/rois/Spur/
+data/rois/Spurious_copper/

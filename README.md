@@ -1,0 +1,386 @@
+# PCB Defect Detection System
+
+A complete AI-powered system for detecting and classifying defects in printed circuit boards (PCBs) using deep learning.
+
+## 📋 Table of Contents
+
+- [Overview](#overview)
+- [Features](#features)
+- [System Requirements](#system-requirements)
+- [Installation](#installation)
+- [Project Structure](#project-structure)
+- [Quick Start](#quick-start)
+- [Usage Guide](#usage-guide)
+- [Training Your Own Model](#training-your-own-model)
+- [Web Interface](#web-interface)
+- [Export Options](#export-options)
+- [Troubleshooting](#troubleshooting)
+- [Version Control](#version-control)
+- [Contributing](#contributing)
+
+## 🎯 Overview
+
+This system uses computer vision and deep learning (EfficientNet-B4) to automatically detect and classify PCB defects. It compares a test board against a template (defect-free) board to identify anomalies.
+
+**Detectable Defect Types:**
+- Missing Hole
+- Mouse Bite
+- Open Circuit
+- Short Circuit
+- Spur
+- Spurious Copper
+
+## ✨ Features
+
+- **Automated Detection**: Finds defects by comparing test vs template boards
+- **AI Classification**: Identifies defect types with confidence scores
+- **Web Interface**: User-friendly Streamlit app
+- **Multiple Export Formats**: 
+  - Annotated images (JPG)
+  - CSV logs
+  - PDF reports
+- **High Accuracy**: 99.8% test accuracy
+- **Fast Performance**: Cached model loading for speed
+- **Beginner-Friendly**: Simple, well-documented code
+
+## 💻 System Requirements
+
+- **Python**: 3.9 or higher (tested on 3.13)
+- **RAM**: 8GB minimum (16GB recommended)
+- **GPU**: Optional but recommended for faster training
+- **Storage**: 2GB for model and data
+- **OS**: Windows, Linux, or macOS
+
+## 📦 Installation
+
+### 1. Clone Repository
+```bash
+git clone https://github.com/springboardmentor0430s/CircuitGuard/tree/CircuitGuard/TejasBadhe
+cd CircuitGuard
+```
+
+### 2. Download Dataset
+Download and extract the PCB dataset:
+
+**Dataset Link:** [Download PCB_DATASET.zip from Dropbox](https://www.dropbox.com/scl/fi/4vrtqn7t001yl41oucflu/PCB_DATASET.zip?rlkey=pghz15q2bsg2&e=1&st=odxdm9ml)
+
+```bash
+# Extract to project root
+unzip PCB_DATASET.zip -d .
+```
+
+The dataset includes:
+- `PCB_DATASET/images/` - Test PCB images with defects
+- `PCB_DATASET/Annotations/` - XML annotation files (Pascal VOC format)
+- `PCB_DATASET/PCB_USED/` - Template (defect-free) PCB images
+- 6 defect classes: Missing_hole, Mouse_bite, Open_circuit, Short, Spur, Spurious_copper
+
+### 3. Install Dependencies
+```bash
+pip install -r requirements.txt
+```
+
+### 4. Verify Installation
+```bash
+python -c "import torch; import cv2; import streamlit; print('All dependencies installed!')"
+```
+
+## 📁 Project Structure
+
+```
+Circuit_Guard_New/
+├── data/                          # Dataset directory
+│   ├── rois/                      # Extracted defect regions
+│   │   ├── Missing_hole/
+│   │   ├── Mouse_bite/
+│   │   └── ...
+│   └── splits/                    # Train/val/test split
+│       ├── train/
+│       ├── val/
+│       ├── test/
+│       └── class_mapping.json
+│
+├── PCB_DATASET/                   # Original dataset
+│   ├── images/                    # Test PCB images
+│   ├── Annotations/               # XML annotations
+│   ├── PCB_USED/                  # Template images
+│   └── rotate.py                  # Rotation utilities
+│
+├── preprocessing/                 # Data preprocessing scripts
+│   ├── xml_parser.py              # Parse XML annotations
+│   ├── extract_rois.py            # Extract defect regions
+│   ├── split_dataset.py           # Train/val/test split
+│   └── data.py                    # Data pipeline
+│
+├── training/                      # Model training
+│   ├── dataset.py                 # PyTorch dataset
+│   ├── efficientnet_model.py      # Model definition
+│   ├── train.py                   # Training script
+│   ├── evaluate.py                # Evaluation metrics
+│   ├── checkpoints/               # Saved models
+│   │   └── best_model.pth
+│   └── results/                   # Confusion matrix, reports
+│       └── classification_report.json
+│
+├── inference/                     # Inference and web app
+│   ├── app.py                     # Streamlit web interface
+│   ├── detect_defects.py          # Detection pipeline
+│   └── classify_defects.py        # Classification logic
+│
+├── .gitignore                     # Git ignore rules
+├── requirements.txt               # Python dependencies
+├── README.md                      # This file
+├── USER_GUIDE.md                  # Detailed usage guide
+└── TECHNICAL_DOCUMENTATION.md     # Technical details
+```
+
+## 🚀 Quick Start
+
+### Web Interface (Recommended)
+
+```bash
+cd inference
+streamlit run app.py
+```
+
+1. Upload template PCB (defect-free reference)
+2. Upload test PCB (board to inspect)
+3. Adjust settings (confidence threshold, minimum area)
+4. Click "Detect Defects"
+5. View results and export reports
+
+
+## 📖 Usage Guide
+
+### 1. Prepare Your Data
+
+If you have your own PCB images:
+
+```bash
+cd preprocessing
+python data.py
+```
+
+This will:
+- Parse XML annotations
+- Extract defect ROIs (128x128 images)
+- Split into train/val/test sets (70/15/15)
+- Create class mapping
+
+### 2. Train Model (Optional)
+
+If you want to train on your own data:
+
+```bash
+cd training
+python train.py
+```
+
+Training parameters:
+- Epochs: 50
+- Batch size: 32
+- Learning rate: 0.0001
+- Model: EfficientNet-B4 (~17.5M parameters)
+
+Monitor progress in console. Best model saves automatically.
+
+### 3. Evaluate Model
+
+```bash
+cd training
+python evaluate.py
+```
+
+Generates:
+- Confusion matrix (PNG)
+- Classification report (JSON)
+- Per-class metrics (precision, recall, F1-score)
+
+### 4. Run Detection
+
+**Web Interface:**
+```bash
+cd inference
+streamlit run app.py
+```
+
+**Command Line:**
+```bash
+cd inference
+python detect_defects.py --test <test_image> --template <template_image>
+```
+
+## 🖥️ Web Interface
+
+### Features
+
+1. **Image Upload**
+   - Drag & drop or browse
+   - Supports JPG, JPEG, PNG
+
+2. **Settings**
+   - Model path
+   - Class mapping path
+   - Minimum defect area (50-500 pixels)
+   - Confidence threshold (0.0-1.0)
+
+3. **Results Display**
+   - Annotated image with colored boxes
+   - Metrics: total defects, high confidence count
+   - Expandable defect details with crops
+
+4. **Export Options**
+   - 📥 Annotated Image (JPG)
+   - 📊 CSV Report (detailed log)
+   - 📄 PDF Report (professional summary)
+
+### Settings Guide
+
+**Minimum Defect Area:**
+- Lower (50-100): Finds small defects, more noise
+- Default (120): Balanced detection
+- Higher (200-500): Only large defects, less noise
+
+**Confidence Threshold:**
+- 0.0-0.4: Show all predictions (may include false positives)
+- 0.5: Balanced (default)
+- 0.6-0.8: High confidence only
+- 0.9-1.0: Very strict (may miss some defects)
+
+## 📤 Export Options
+
+### 1. Annotated Image
+- JPG format
+- Colored bounding boxes
+- Class labels with confidence
+- Ready for presentation
+
+### 2. CSV Report
+Contains:
+- Timestamp
+- Image names
+- Settings used
+- Defect table (ID, type, confidence, position, size, area)
+
+Example:
+```csv
+Timestamp, 2025-11-20 12:30:45
+Template Image, template_01.jpg
+Test Image, test_board_05.jpg
+Confidence Threshold, 0.50
+Total Defects, 3
+
+ID, Type, Confidence, X, Y, Width, Height, Area
+1, Missing hole, 95%, 120, 150, 18, 20, 360
+2, Short, 88%, 250, 200, 25, 22, 550
+3, Spur, 75%, 180, 300, 15, 18, 270
+```
+
+### 3. PDF Report
+Professional report with:
+- Cover page with summary
+- Annotated image
+- Defect details table
+- Timestamp and metadata
+- Ready to share with stakeholders
+
+### Detection Issues
+
+**No defects found:**
+- Lower `min_area` setting (try 80-100)
+- Check if images are different
+- Verify image quality (clear, well-lit)
+- Ensure template is defect-free
+
+**Too many false positives:**
+- Raise `min_area` (try 150-200)
+- Increase confidence threshold (0.6-0.8)
+- Use better quality images
+- Re-align images if tilted
+
+**Model not found:**
+```bash
+# Check path
+ls training/checkpoints/best_model.pth
+
+# Train model if missing
+cd training
+python train.py
+```
+
+
+## 🎓 Training Your Own Model
+
+### 1. Prepare Dataset
+
+Your dataset should have:
+- Images: PCB test images (JPG/PNG)
+- Annotations: Pascal VOC XML format
+- Template: Defect-free reference boards
+
+```xml
+<!-- Example annotation -->
+<annotation>
+  <filename>01_missing_hole_01.jpg</filename>
+  <size>
+    <width>600</width>
+    <height>600</height>
+  </size>
+  <object>
+    <name>Missing_hole</name>
+    <bndbox>
+      <xmin>120</xmin>
+      <ymin>150</ymin>
+      <xmax>138</xmax>
+      <ymax>170</ymax>
+    </bndbox>
+  </object>
+</annotation>
+```
+
+### 2. Extract ROIs
+
+```bash
+cd preprocessing
+python data.py
+```
+
+### 3. Train
+
+```bash
+cd training
+python train.py
+```
+
+Monitor training:
+- Loss should decrease
+- Accuracy should increase
+- Best model saves automatically
+
+### 4. Evaluate
+
+```bash
+python evaluate.py
+```
+
+Check confusion matrix for problem classes.
+
+### 5. Fine-tune (Optional)
+
+If accuracy is low:
+- Collect more data
+- Adjust learning rate
+- Train more epochs
+- Try data augmentation
+
+
+## 📊 Performance Metrics
+
+On test set:
+- **Overall Accuracy:** 99.8%
+- **Missing Hole:** 100% precision, 100% recall
+- **Mouse Bite:** 98.7% precision, 100% recall
+- **Open Circuit:** 100% precision, 98.6% recall
+- **Short:** 100% precision, 100% recall
+- **Spur:** 100% precision, 100% recall
+- **Spurious Copper:** 100% precision, 100% recall
