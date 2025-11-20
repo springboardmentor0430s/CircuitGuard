@@ -3,7 +3,7 @@
 CircuitGuard is an end-to-end system for PCB defect detection and reporting. It consists of a React-based frontend and a Flask backend that runs a computer-vision pipeline with optional classification using a PyTorch EfficientNet model. The system supports visual inspection, statistical analysis, and PDF report generation.
 
 ### Tech Stack
-- Frontend: React 18, Axios, Recharts, react-scripts, lucide-react
+- Frontend: React 19, Axios, Recharts, react-scripts, lucide-react
 - Backend: Python (Flask, Flask-CORS), OpenCV, NumPy, PyTorch, ReportLab, scikit-learn, timm
 
 ### Repository Structure
@@ -23,6 +23,12 @@ CircuitGuard is an end-to-end system for PCB defect detection and reporting. It 
 ├─ frontend/
 │  ├─ package.json             # React app, proxy to backend @ :5000
 │  └─ src/                     # App.js talks to backend API
+```
+
+
+## Install the .pth file from here and place it inside backend/model
+```
+https://drive.google.com/file/d/1TsArrsEhypOJEkUwJpmPD_lvAg5xteXe/view?usp=sharing
 ```
 
 ### High-level Architecture
