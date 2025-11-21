@@ -2,6 +2,14 @@
 
 ## 🏗️ System Architecture
 
+<table>
+  <tr>
+    <td align="center">
+      <img src="Images/System Architecture.png" width="1000" />
+      <p>System Architecture</p>
+  </tr>
+</table>
+
 ### Overview
 The system consists of three main components:
 1. **Preprocessing Pipeline**: Image processing and ROI extraction
