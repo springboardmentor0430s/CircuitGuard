@@ -1,6 +1,5 @@
-# 🔍 CircuitGuard: PCB Defect Detection System
-
-A comprehensive deep learning system for automated PCB defect detection using EfficientNet-B4 and computer vision techniques.
+# 🔍CircuitGuard:  PCB Defect Detection System
+An AI-powered system for automated PCB defect detection using EfficientNet-B4 and advanced computer vision techniques.
 
 <table>
   <tr>
@@ -14,6 +13,20 @@ A comprehensive deep learning system for automated PCB defect detection using Ef
     </td>
   </tr>
 </table>
+
+## 🛠 Problem Statement
+- Manual PCB inspection is slow, inconsistent, and expensive.
+- Around 15–20% of PCBs contain manufacturing defects.
+- Human fatigue reduces inspection accuracy.
+- Each defective board can cost $50–500, increasing overall manufacturing loss.
+
+## 💡 Proposed Solution
+- AI-powered PCB defect detection using Deep Learning + Computer Vision.
+- Real-time defect detection through a web-based interface.
+- Consistent and reliable automated analysis.
+- Export of reports (CSV and annotated images).
+- High accuracy using an EfficientNet-B4 model.
+
 
 
 ## 🚀 Features
