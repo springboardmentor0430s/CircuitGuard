@@ -44,114 +44,99 @@ st.set_page_config(
 # ============================================
 st.markdown("""
 <style>
+
+    /* Hide main menu/footer */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
-    
+
+    /* ---------- HEADER ---------- */
     .main-header {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        padding: 2rem;
-        border-radius: 15px;
+        padding: 1.2rem;              /* Reduced from 2rem */
+        border-radius: 12px;
         text-align: center;
-        margin-bottom: 2rem;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        margin-bottom: 1.5rem;
     }
-    
+
     .main-header h1 {
         color: white;
-        font-size: 3.5rem;
-        font-weight: 800;
+        font-size: 2.2rem;            /* Reduced from 3.5rem */
+        font-weight: 700;
         margin: 0;
-        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
     }
-    
+
     .main-header p {
         color: #f0f0f0;
-        font-size: 1.3rem;
-        margin-top: 0.5rem;
+        font-size: 1.0rem;            /* Reduced from 1.3rem */
+        margin-top: 0.3rem;
     }
-    
+
+    /* ---------- INFO CARD ---------- */
     .info-card {
         background: white;
-        padding: 1.5rem;
-        border-radius: 12px;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        margin: 1rem 0;
-        border-left: 4px solid #667eea;
+        padding: 0.9rem;              /* Reduced padding */
+        border-radius: 10px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        margin: 0.7rem 0;
+        border-left: 3px solid #667eea;
+        font-size: 0.85rem;           /* Compact text */
     }
-    
+
+    /* ---------- METRIC BOX ---------- */
     .metric-box {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        padding: 1.5rem;
-        border-radius: 12px;
+        padding: 1rem;                /* Reduced */
+        border-radius: 10px;
         text-align: center;
         color: white;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        margin: 0.5rem 0;
+        font-size: 0.9rem;
     }
-    
+
     .metric-box h2 {
-        font-size: 2.5rem;
+        font-size: 1.6rem;            /* Reduced from 2.5rem */
         margin: 0;
         font-weight: bold;
     }
-    
+
     .metric-box p {
-        font-size: 1rem;
-        margin: 0.5rem 0 0 0;
-        opacity: 0.9;
+        font-size: 0.8rem;
+        margin-top: 0.2rem;
     }
-    
+
+    /* ---------- DEFECT LABELS ---------- */
     .defect-badge {
         display: inline-block;
-        padding: 0.5rem 1rem;
-        border-radius: 20px;
-        font-weight: bold;
-        font-size: 1rem;
-        margin: 0.3rem;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        padding: 0.3rem 0.7rem;        /* Smaller */
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 0.75rem;
+        margin: 0.2rem;
     }
-    
+
+    /* ---------- BUTTON ---------- */
     .stButton>button {
         width: 100%;
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
-        font-size: 1.3rem;
-        font-weight: 600;
-        padding: 0.8rem;
-        border-radius: 10px;
-        border: none;
-        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        font-size: 1rem;               /* Reduced */
+        padding: 0.6rem;               /* Reduced */
+        border-radius: 8px;
     }
-    
-    .stButton>button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
-    }
-    
+
+    /* ---------- LOG BOX ---------- */
     .log-box {
         background: #2d3748;
         color: #48bb78;
-        padding: 1rem;
-        border-radius: 8px;
-        font-family: 'Courier New', monospace;
-        font-size: 0.85rem;
-        max-height: 400px;
+        padding: 0.8rem;               /* Reduced */
+        border-radius: 6px;
+        font-size: 0.75rem;            /* Smaller text */
+        max-height: 300px;             /* Reduced */
         overflow-y: auto;
-        border: 1px solid #4a5568;
     }
-    
-    .time-badge {
-        display: inline-block;
-        background: #48bb78;
-        color: white;
-        padding: 0.3rem 0.8rem;
-        border-radius: 15px;
-        font-weight: 600;
-        font-size: 0.9rem;
-        margin: 0.2rem;
-    }
+
 </style>
 """, unsafe_allow_html=True)
+
 
 # ============================================
 # INITIALIZE BACKEND
