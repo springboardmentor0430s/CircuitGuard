@@ -27,7 +27,12 @@ An AI-powered system for automated PCB defect detection using EfficientNet-B4 an
 - Export of reports (CSV and annotated images).
 - High accuracy using an EfficientNet-B4 model.
 
-
+<table>
+<td align="center">
+      <img src="Images/4.jpg" width="400" />
+      <p>Annotated Image</p>
+    </td>
+</table>
 
 ## 🚀 Features
 
@@ -36,6 +41,7 @@ An AI-powered system for automated PCB defect detection using EfficientNet-B4 an
 - **High Accuracy**: 98.34% test accuracy with EfficientNet-B4 model
 - **Export Capabilities**: Download annotated images and CSV prediction logs
 - **Interactive UI**: User-friendly web interface with parameter controls
+
 
 ## 📁 Project Structure
 
